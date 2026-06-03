@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PIB x Arrecadação de Impostos</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #182434;
+      --muted: #65748a;
+      --grid: #dbe5f0;
+      --pib: #0b2f5b;
+      --tax: #f27a1a;
+      --rest: #dce8f4;
+      --accent: #17b8d4;
+      --gold: #d8a31a;
+      --graphite: #111827;
+      --line: #d7e0ea;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(11, 47, 91, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11, 47, 91, 0.035) 1px, transparent 1px),
+        var(--bg);
+      background-size: 28px 28px;
+    }
+    main {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 28px auto;
+    }
+    header {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 18px;
+      padding: 34px 36px 32px;
+      color: #ffffff;
+      background:
+        linear-gradient(135deg, rgba(23, 184, 212, 0.22), transparent 32%),
+        linear-gradient(120deg, #071b34 0%, #0b2f5b 62%, #123f72 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      box-shadow: 0 18px 38px rgba(11, 47, 91, 0.22);
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -130px auto;
+      width: 360px;
+      height: 360px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transform: rotate(18deg);
+    }
+    .eyebrow {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      color: #a9eaf4;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 999px;
+    }
+    h1 {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 8px;
+      max-width: 760px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    header p {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      color: #d7e6f7;
+      font-size: 15px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+    .metric, .chart-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+    }
+    .metric {
+      position: relative;
+      padding: 14px 16px;
+      overflow: hidden;
+    }
+    .metric::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--pib), var(--accent));
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .metric strong {
+      color: var(--pib);
+      font-size: 21px;
+      line-height: 1.2;
+    }
+    .decision-strip {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr;
+      gap: 12px;
+      margin: 0 0 16px;
+    }
+    .decision-item {
+      min-height: 96px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .decision-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--pib);
+      font-size: 14px;
+    }
+    .decision-item p {
+      font-size: 13px;
+    }
+    .decision-item.attention {
+      border-color: rgba(216, 163, 26, 0.42);
+      background: linear-gradient(180deg, #fffaf0, #ffffff);
+    }
+    .filters {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 0 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .filters-title strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--pib);
+      font-size: 14px;
+    }
+    .filters-title p {
+      font-size: 13px;
+    }
+    .filter-fields {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+    }
+    .filter-fields label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .filter-fields input {
+      min-width: 150px;
+      height: 38px;
+      padding: 0 10px;
+      color: var(--text);
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+    }
+    .chart-card {
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 10px;
+    }
+    h2 {
+      color: var(--pib);
+      margin: 0 0 4px;
+      font-size: 19px;
+      letter-spacing: 0;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .legend i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+    svg {
+      width: 100%;
+      height: 400px;
+      display: block;
+      overflow: visible;
+    }
+    .axis text {
+      fill: var(--muted);
+      font-size: 11px;
+    }
+    line.axis, line.grid {
+      stroke: var(--grid);
+      stroke-width: 1;
+    }
+    .line {
+      fill: none;
+      stroke-width: 2.8;
+    }
+    .note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .tooltip {
+      position: fixed;
+      z-index: 10;
+      pointer-events: none;
+      background: #071b34;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      line-height: 1.45;
+      min-width: 210px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.24);
+      display: none;
+    }
+    @media (max-width: 860px) {
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .decision-strip { grid-template-columns: 1fr; }
+      .filters { display: block; }
+      .filter-fields { margin-top: 12px; flex-wrap: wrap; }
+      .chart-head { display: block; }
+      .legend { margin-top: 8px; }
+      svg { height: 360px; }
+    }
+    @media (max-width: 520px) {
+      main { width: min(100vw - 20px, 1180px); margin-top: 18px; }
+      .metrics { grid-template-columns: 1fr; }
+      h1 { font-size: 23px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Filosofia dos Dados</div>
+      <h1>PIB x Arrecadação de Impostos no Brasil</h1>
+      <p>Série mensal de 2004 a 2025. Os gráficos principais usam acumulado móvel de 12 meses para reduzir sazonalidade mensal; o PIB do Bacen/Ipeadata foi convertido de R$ milhões para reais.</p>
+    </header>
+
+    <section class="metrics">
+      <div class="metric"><span>Período filtrado</span><strong id="periodoSelecionado">2004-12 a 2025-12</strong></div>
+      <div class="metric"><span>Média imposto / PIB 12m</span><strong id="mediaPct">31.6%</strong></div>
+      <div class="metric"><span>Último PIB 12m</span><strong id="ultimoPib"></strong></div>
+      <div class="metric"><span>Último imposto 12m</span><strong id="ultimoImposto"></strong></div>
+    </section>
+
+    <section class="filters" aria-label="Filtro de período">
+      <div class="filters-title">
+        <strong>Filtro do painel</strong>
+        <p>Selecione mês e ano para ajustar a leitura dos indicadores e gráficos.</p>
+      </div>
+      <div class="filter-fields">
+        <label for="filtroInicio">Início
+          <input id="filtroInicio" type="month">
+        </label>
+        <label for="filtroFim">Fim
+          <input id="filtroFim" type="month">
+        </label>
+      </div>
+    </section>
+
+    <section class="decision-strip" aria-label="Resumo executivo">
+      <div class="decision-item">
+        <strong>O que está acontecendo?</strong>
+        <p>A comparação foi suavizada em 12 meses para revelar tendência, reduzindo oscilações de calendário e vencimentos tributários.</p>
+      </div>
+      <div class="decision-item attention">
+        <strong>O que merece atenção?</strong>
+        <p>A leitura principal é a participação dos impostos no PIB, não picos isolados de um mês específico.</p>
+      </div>
+      <div class="decision-item">
+        <strong>Qual decisão isso ajuda?</strong>
+        <p>Ajuda a avaliar pressão tributária em relação à atividade econômica com uma base mais estável.</p>
+      </div>
+    </section>
+
+    <section class="chart-card">
+      <div class="chart-head">
+        <div>
+          <h2>Valores acumulados em 12 meses</h2>
+          <p>PIB e arrecadação em reais, somados nos últimos 12 meses.</p>
+        </div>
+        <div class="legend">
+          <span><i style="background: var(--pib)"></i>PIB</span>
+          <span><i style="background: var(--tax)"></i>Impostos</span>
+        </div>
+      </div>
+      <svg id="chartValores" role="img" aria-label="Gráfico de linhas com PIB e impostos mensais"></svg>
+    </section>
+
+    <section class="chart-card">
+      <div class="chart-head">
+        <div>
+          <h2>Imposto como percentual do PIB</h2>
+          <p>Percentual da arrecadação acumulada em 12 meses em relação ao PIB acumulado em 12 meses.</p>
+        </div>
+        <div class="legend">
+          <span><i style="background: var(--tax)"></i>Imposto / PIB</span>
+        </div>
+      </div>
+      <svg id="chartPercentualLinha" role="img" aria-label="Gráfico de linha com percentual de impostos sobre PIB"></svg>
+    </section>
+
+    <section class="chart-card">
+      <div class="chart-head">
+        <div>
+          <h2>Participação dos impostos no PIB</h2>
+          <p>Cada barra representa 100% do PIB acumulado em 12 meses; a parte vermelha é a parcela equivalente à arrecadação.</p>
+        </div>
+        <div class="legend">
+          <span><i style="background: var(--tax)"></i>Impostos</span>
+          <span><i style="background: var(--rest)"></i>PIB restante</span>
+        </div>
+      </div>
+      <svg id="chartPercentual" role="img" aria-label="Gráfico de barras 100% com participação dos impostos no PIB"></svg>
+      <p class="note">Leitura: se o PIB acumulado em 12 meses fosse 100%, a faixa vermelha mostra quanto desse total corresponde à arrecadação de tributos.</p>
+    </section>
+
+    <p class="note">Fontes: Ipeadata/Bacen série BM12_PIB12; Impostômetro endpoint público https://impostometro.com.br/Contador/Brasil. Dados consultados em 19/05/2026.</p>
+  </main>
+  <div class="tooltip" id="tooltip"></div>
+  <script>
+    const dados = [{"periodo": "2004-01", "ano": 2004, "mes": 1, "pib": 144558600000.0, "impostos": 46232090263.74, "impostoPct": 31.9816, "restantePct": 68.0184, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-02", "ano": 2004, "mes": 2, "pib": 142861300000.0, "impostos": 38658141661.73, "impostoPct": 27.0599, "restantePct": 72.9401, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-03", "ano": 2004, "mes": 3, "pib": 157363500000.0, "impostos": 40571194120.03, "impostoPct": 25.7818, "restantePct": 74.2182, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-04", "ano": 2004, "mes": 4, "pib": 156953900000.0, "impostos": 41968409557.2, "impostoPct": 26.7393, "restantePct": 73.2607, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-05", "ano": 2004, "mes": 5, "pib": 159498900000.0, "impostos": 40390365341.45, "impostoPct": 25.3233, "restantePct": 74.6767, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-06", "ano": 2004, "mes": 6, "pib": 165342200000.0, "impostos": 42445873374.07, "impostoPct": 25.6715, "restantePct": 74.3285, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-07", "ano": 2004, "mes": 7, "pib": 171370900000.0, "impostos": 42962222035.29, "impostoPct": 25.0697, "restantePct": 74.9303, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-08", "ano": 2004, "mes": 8, "pib": 169178900000.0, "impostos": 42670163400.71, "impostoPct": 25.2219, "restantePct": 74.7781, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-09", "ano": 2004, "mes": 9, "pib": 164702500000.0, "impostos": 43393699550.4, "impostoPct": 26.3467, "restantePct": 73.6533, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-10", "ano": 2004, "mes": 10, "pib": 170536500000.0, "impostos": 43927859015.56, "impostoPct": 25.7586, "restantePct": 74.2414, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-11", "ano": 2004, "mes": 11, "pib": 176921500000.0, "impostos": 41881256779.54, "impostoPct": 23.6722, "restantePct": 76.3278, "pib12m": null, "impostos12m": null, "impostoPct12m": null, "restantePct12m": null}, {"periodo": "2004-12", "ano": 2004, "mes": 12, "pib": 178462400000.0, "impostos": 50783321839.46, "impostoPct": 28.456, "restantePct": 71.544, "pib12m": 1957751100000.0, "impostos12m": 515884596939.18, "impostoPct12m": 26.3509, "restantePct12m": 73.6491}, {"periodo": "2005-01", "ano": 2005, "mes": 1, "pib": 163540100000.0, "impostos": 52620924784.66, "impostoPct": 32.1762, "restantePct": 67.8238, "pib12m": 1976732600000.0, "impostos12m": 522273431460.1, "impostoPct12m": 26.421, "restantePct12m": 73.579}, {"periodo": "2005-02", "ano": 2005, "mes": 2, "pib": 160701600000.0, "impostos": 44138588985.51, "impostoPct": 27.4662, "restantePct": 72.5338, "pib12m": 1994572900000.0, "impostos12m": 527753878783.88, "impostoPct12m": 26.4595, "restantePct12m": 73.5405}, {"periodo": "2005-03", "ano": 2005, "mes": 3, "pib": 175468700000.0, "impostos": 47432452750.28, "impostoPct": 27.0319, "restantePct": 72.9681, "pib12m": 2012678100000.0, "impostos12m": 534615137414.14, "impostoPct12m": 26.5624, "restantePct12m": 73.4376}, {"periodo": "2005-04", "ano": 2005, "mes": 4, "pib": 177179000000.0, "impostos": 49508436664.15, "impostoPct": 27.9426, "restantePct": 72.0574, "pib12m": 2032903200000.0, "impostos12m": 542155164521.08, "impostoPct12m": 26.669, "restantePct12m": 73.331}, {"periodo": "2005-05", "ano": 2005, "mes": 5, "pib": 177496700000.0, "impostos": 46223594713.2, "impostoPct": 26.0419, "restantePct": 73.9581, "pib12m": 2050901000000.0, "impostos12m": 547988393892.83, "impostoPct12m": 26.7194, "restantePct12m": 73.2806}, {"periodo": "2005-06", "ano": 2005, "mes": 6, "pib": 180881800000.0, "impostos": 50938557998.39, "impostoPct": 28.1612, "restantePct": 71.8388, "pib12m": 2066440600000.0, "impostos12m": 556481078517.15, "impostoPct12m": 26.9294, "restantePct12m": 73.0706}, {"periodo": "2005-07", "ano": 2005, "mes": 7, "pib": 184073700000.0, "impostos": 49151727939.38, "impostoPct": 26.7022, "restantePct": 73.2978, "pib12m": 2079143400000.0, "impostos12m": 562670584421.24, "impostoPct12m": 27.0626, "restantePct12m": 72.9374}, {"periodo": "2005-08", "ano": 2005, "mes": 8, "pib": 187246600000.0, "impostos": 58137926226.47, "impostoPct": 31.0489, "restantePct": 68.9511, "pib12m": 2097211100000.0, "impostos12m": 578138347247.0, "impostoPct12m": 27.567, "restantePct12m": 72.433}, {"periodo": "2005-09", "ano": 2005, "mes": 9, "pib": 181538900000.0, "impostos": 57958330448.41, "impostoPct": 31.9261, "restantePct": 68.0739, "pib12m": 2114047500000.0, "impostos12m": 592702978145.0, "impostoPct12m": 28.0364, "restantePct12m": 71.9636}, {"periodo": "2005-10", "ano": 2005, "mes": 10, "pib": 189183000000.0, "impostos": 59655722484.35, "impostoPct": 31.5333, "restantePct": 68.4667, "pib12m": 2132694000000.0, "impostos12m": 608430841613.8, "impostoPct12m": 28.5287, "restantePct12m": 71.4713}, {"periodo": "2005-11", "ano": 2005, "mes": 11, "pib": 194794500000.0, "impostos": 49560562640.28, "impostoPct": 25.4425, "restantePct": 74.5575, "pib12m": 2150567000000.0, "impostos12m": 616110147474.54, "impostoPct12m": 28.6487, "restantePct12m": 71.3513}, {"periodo": "2005-12", "ano": 2005, "mes": 12, "pib": 198480000000.0, "impostos": 58917436692.67, "impostoPct": 29.6843, "restantePct": 70.3157, "pib12m": 2170584600000.0, "impostos12m": 624244262327.74, "impostoPct12m": 28.7593, "restantePct12m": 71.2407}, {"periodo": "2006-01", "ano": 2006, "mes": 1, "pib": 185564800000.0, "impostos": 57340234038.04, "impostoPct": 30.9004, "restantePct": 69.0996, "pib12m": 2192609300000.0, "impostos12m": 628963571581.12, "impostoPct12m": 28.6856, "restantePct12m": 71.3144}, {"periodo": "2006-02", "ano": 2006, "mes": 2, "pib": 178482200000.0, "impostos": 48328000868.28, "impostoPct": 27.0772, "restantePct": 72.9228, "pib12m": 2210389900000.0, "impostos12m": 633152983463.89, "impostoPct12m": 28.6444, "restantePct12m": 71.3556}, {"periodo": "2006-03", "ano": 2006, "mes": 3, "pib": 190223300000.0, "impostos": 52056843574.63, "impostoPct": 27.3662, "restantePct": 72.6338, "pib12m": 2225144500000.0, "impostos12m": 637777374288.24, "impostoPct12m": 28.6623, "restantePct12m": 71.3377}, {"periodo": "2006-04", "ano": 2006, "mes": 4, "pib": 185030600000.0, "impostos": 53897708491.01, "impostoPct": 29.1291, "restantePct": 70.8709, "pib12m": 2232996100000.0, "impostos12m": 642166646115.09, "impostoPct12m": 28.7581, "restantePct12m": 71.2419}, {"periodo": "2006-05", "ano": 2006, "mes": 5, "pib": 197874300000.0, "impostos": 50151734387.42, "impostoPct": 25.3452, "restantePct": 74.6548, "pib12m": 2253373700000.0, "impostos12m": 646094785789.31, "impostoPct12m": 28.6723, "restantePct12m": 71.3277}, {"periodo": "2006-06", "ano": 2006, "mes": 6, "pib": 199071900000.0, "impostos": 55534885095.0, "impostoPct": 27.8969, "restantePct": 72.1031, "pib12m": 2271563800000.0, "impostos12m": 650691112885.92, "impostoPct12m": 28.6451, "restantePct12m": 71.3549}, {"periodo": "2006-07", "ano": 2006, "mes": 7, "pib": 206974400000.0, "impostos": 53138289977.86, "impostoPct": 25.6738, "restantePct": 74.3262, "pib12m": 2294464500000.0, "impostos12m": 654677674924.41, "impostoPct12m": 28.5329, "restantePct12m": 71.4671}, {"periodo": "2006-08", "ano": 2006, "mes": 8, "pib": 209818000000.0, "impostos": 52405908015.23, "impostoPct": 24.9768, "restantePct": 75.0232, "pib12m": 2317035900000.0, "impostos12m": 648945656713.17, "impostoPct12m": 28.0076, "restantePct12m": 71.9924}, {"periodo": "2006-09", "ano": 2006, "mes": 9, "pib": 201055400000.0, "impostos": 55817257726.28, "impostoPct": 27.7621, "restantePct": 72.2379, "pib12m": 2336552400000.0, "impostos12m": 646804583991.04, "impostoPct12m": 27.682, "restantePct12m": 72.318}, {"periodo": "2006-10", "ano": 2006, "mes": 10, "pib": 214271700000.0, "impostos": 57096360528.03, "impostoPct": 26.6467, "restantePct": 73.3533, "pib12m": 2361641100000.0, "impostos12m": 644245222034.72, "impostoPct12m": 27.2796, "restantePct12m": 72.7204}, {"periodo": "2006-11", "ano": 2006, "mes": 11, "pib": 219724200000.0, "impostos": 54970586140.34, "impostoPct": 25.018, "restantePct": 74.982, "pib12m": 2386570800000.0, "impostos12m": 649655245534.79, "impostoPct12m": 27.2213, "restantePct12m": 72.7787}, {"periodo": "2006-12", "ano": 2006, "mes": 12, "pib": 221359300000.0, "impostos": 63748238873.26, "impostoPct": 28.7985, "restantePct": 71.2015, "pib12m": 2409450100000.0, "impostos12m": 654486047715.38, "impostoPct12m": 27.1633, "restantePct12m": 72.8367}, {"periodo": "2007-01", "ano": 2007, "mes": 1, "pib": 211130700000.0, "impostos": 65371994938.68, "impostoPct": 30.9628, "restantePct": 69.0372, "pib12m": 2435016000000.0, "impostos12m": 662517808616.02, "impostoPct12m": 27.2079, "restantePct12m": 72.7921}, {"periodo": "2007-02", "ano": 2007, "mes": 2, "pib": 202704100000.0, "impostos": 54907339732.99, "impostoPct": 27.0874, "restantePct": 72.9126, "pib12m": 2459237900000.0, "impostos12m": 669097147480.74, "impostoPct12m": 27.2075, "restantePct12m": 72.7925}, {"periodo": "2007-03", "ano": 2007, "mes": 3, "pib": 217588900000.0, "impostos": 58131667014.37, "impostoPct": 26.7163, "restantePct": 73.2837, "pib12m": 2486603500000.0, "impostos12m": 675171970920.48, "impostoPct12m": 27.1524, "restantePct12m": 72.8476}, {"periodo": "2007-04", "ano": 2007, "mes": 4, "pib": 215128800000.0, "impostos": 73496837600.01, "impostoPct": 34.1641, "restantePct": 65.8359, "pib12m": 2516701700000.0, "impostos12m": 694771100029.48, "impostoPct12m": 27.6064, "restantePct12m": 72.3936}, {"periodo": "2007-05", "ano": 2007, "mes": 5, "pib": 226537900000.0, "impostos": 69724201759.85, "impostoPct": 30.7782, "restantePct": 69.2218, "pib12m": 2545365300000.0, "impostos12m": 714343567401.92, "impostoPct12m": 28.0645, "restantePct12m": 71.9355}, {"periodo": "2007-06", "ano": 2007, "mes": 6, "pib": 228988600000.0, "impostos": 73224932159.07, "impostoPct": 31.9775, "restantePct": 68.0225, "pib12m": 2575282000000.0, "impostos12m": 732033614465.99, "impostoPct12m": 28.4254, "restantePct12m": 71.5746}, {"periodo": "2007-07", "ano": 2007, "mes": 7, "pib": 233824100000.0, "impostos": 73229829294.03, "impostoPct": 31.3183, "restantePct": 68.6817, "pib12m": 2602131700000.0, "impostos12m": 752125153782.16, "impostoPct12m": 28.9042, "restantePct12m": 71.0958}, {"periodo": "2007-08", "ano": 2007, "mes": 8, "pib": 235019100000.0, "impostos": 73504840488.38, "impostoPct": 31.2761, "restantePct": 68.7239, "pib12m": 2627332800000.0, "impostos12m": 773224086255.31, "impostoPct12m": 29.43, "restantePct12m": 70.57}, {"periodo": "2007-09", "ano": 2007, "mes": 9, "pib": 223002700000.0, "impostos": 73962350660.12, "impostoPct": 33.1666, "restantePct": 66.8334, "pib12m": 2649280100000.0, "impostos12m": 791369179189.14, "impostoPct12m": 29.8711, "restantePct12m": 70.1289}, {"periodo": "2007-10", "ano": 2007, "mes": 10, "pib": 241939400000.0, "impostos": 78524807986.96, "impostoPct": 32.4564, "restantePct": 67.5436, "pib12m": 2676947800000.0, "impostos12m": 812797626648.08, "impostoPct12m": 30.3628, "restantePct12m": 69.6372}, {"periodo": "2007-11", "ano": 2007, "mes": 11, "pib": 241938400000.0, "impostos": 78366232382.86, "impostoPct": 32.391, "restantePct": 67.609, "pib12m": 2699162000000.0, "impostos12m": 836193272890.59, "impostoPct12m": 30.9797, "restantePct12m": 69.0203}, {"periodo": "2007-12", "ano": 2007, "mes": 12, "pib": 242460200000.0, "impostos": 92774481446.07, "impostoPct": 38.2638, "restantePct": 61.7362, "pib12m": 2720262900000.0, "impostos12m": 865219515463.4, "impostoPct12m": 31.8065, "restantePct12m": 68.1935}, {"periodo": "2008-01", "ano": 2008, "mes": 1, "pib": 237247700000.0, "impostos": 93400952033.96, "impostoPct": 39.3685, "restantePct": 60.6315, "pib12m": 2746379900000.0, "impostos12m": 893248472558.69, "impostoPct12m": 32.5246, "restantePct12m": 67.4754}, {"periodo": "2008-02", "ano": 2008, "mes": 2, "pib": 232680400000.0, "impostos": 76949013138.34, "impostoPct": 33.0707, "restantePct": 66.9293, "pib12m": 2776356200000.0, "impostos12m": 915290145964.03, "impostoPct12m": 32.9673, "restantePct12m": 67.0327}, {"periodo": "2008-03", "ano": 2008, "mes": 3, "pib": 242124400000.0, "impostos": 77619979871.23, "impostoPct": 32.0579, "restantePct": 67.9421, "pib12m": 2800891700000.0, "impostos12m": 934778458820.9, "impostoPct12m": 33.3743, "restantePct12m": 66.6257}, {"periodo": "2008-04", "ano": 2008, "mes": 4, "pib": 248793800000.0, "impostos": 85352597853.25, "impostoPct": 34.3066, "restantePct": 65.6934, "pib12m": 2834556700000.0, "impostos12m": 946634219074.13, "impostoPct12m": 33.3962, "restantePct12m": 66.6038}, {"periodo": "2008-05", "ano": 2008, "mes": 5, "pib": 254936900000.0, "impostos": 78928607515.13, "impostoPct": 30.9601, "restantePct": 69.0399, "pib12m": 2862955700000.0, "impostos12m": 955838624829.41, "impostoPct12m": 33.3864, "restantePct12m": 66.6136}, {"periodo": "2008-06", "ano": 2008, "mes": 6, "pib": 265791200000.0, "impostos": 84755137084.49, "impostoPct": 31.8879, "restantePct": 68.1121, "pib12m": 2899758300000.0, "impostos12m": 967368829754.83, "impostoPct12m": 33.3603, "restantePct12m": 66.6397}, {"periodo": "2008-07", "ano": 2008, "mes": 7, "pib": 278095600000.0, "impostos": 88054144254.88, "impostoPct": 31.6633, "restantePct": 68.3367, "pib12m": 2944029800000.0, "impostos12m": 982193144715.68, "impostoPct12m": 33.3622, "restantePct12m": 66.6378}, {"periodo": "2008-08", "ano": 2008, "mes": 8, "pib": 269235600000.0, "impostos": 83296816978.93, "impostoPct": 30.9383, "restantePct": 69.0617, "pib12m": 2978246300000.0, "impostos12m": 991985121206.23, "impostoPct12m": 33.3077, "restantePct12m": 66.6923}, {"periodo": "2008-09", "ano": 2008, "mes": 9, "pib": 265271200000.0, "impostos": 85938614580.16, "impostoPct": 32.3965, "restantePct": 67.6035, "pib12m": 3020514800000.0, "impostos12m": 1003961385126.27, "impostoPct12m": 33.2381, "restantePct12m": 66.7619}, {"periodo": "2008-10", "ano": 2008, "mes": 10, "pib": 280522500000.0, "impostos": 92607162007.63, "impostoPct": 33.0124, "restantePct": 66.9876, "pib12m": 3059097900000.0, "impostos12m": 1018043739146.94, "impostoPct12m": 33.2792, "restantePct12m": 66.7208}, {"periodo": "2008-11", "ano": 2008, "mes": 11, "pib": 270698800000.0, "impostos": 84555608460.58, "impostoPct": 31.236, "restantePct": 68.764, "pib12m": 3087858300000.0, "impostos12m": 1024233115224.66, "impostoPct12m": 33.1697, "restantePct12m": 66.8303}, {"periodo": "2008-12", "ano": 2008, "mes": 12, "pib": 264404800000.0, "impostos": 97481634663.05, "impostoPct": 36.8683, "restantePct": 63.1317, "pib12m": 3109802900000.0, "impostos12m": 1028940268441.64, "impostoPct12m": 33.087, "restantePct12m": 66.913}, {"periodo": "2009-01", "ano": 2009, "mes": 1, "pib": 249934400000.0, "impostos": 95013787859.35, "impostoPct": 38.0155, "restantePct": 61.9845, "pib12m": 3122489600000.0, "impostos12m": 1030553104267.03, "impostoPct12m": 33.0042, "restantePct12m": 66.9958}, {"periodo": "2009-02", "ano": 2009, "mes": 2, "pib": 244024500000.0, "impostos": 76402578663.16, "impostoPct": 31.3094, "restantePct": 68.6906, "pib12m": 3133833700000.0, "impostos12m": 1030006669791.85, "impostoPct12m": 32.8673, "restantePct12m": 67.1327}, {"periodo": "2009-03", "ano": 2009, "mes": 3, "pib": 262181700000.0, "impostos": 84954208094.33, "impostoPct": 32.4028, "restantePct": 67.5972, "pib12m": 3153891000000.0, "impostos12m": 1037340898014.94, "impostoPct12m": 32.8908, "restantePct12m": 67.1092}, {"periodo": "2009-04", "ano": 2009, "mes": 4, "pib": 259563500000.0, "impostos": 87074302073.52, "impostoPct": 33.5464, "restantePct": 66.4536, "pib12m": 3164660700000.0, "impostos12m": 1039062602235.22, "impostoPct12m": 32.8333, "restantePct12m": 67.1667}, {"periodo": "2009-05", "ano": 2009, "mes": 5, "pib": 268324000000.0, "impostos": 80646713788.25, "impostoPct": 30.0557, "restantePct": 69.9443, "pib12m": 3178047800000.0, "impostos12m": 1040780708508.34, "impostoPct12m": 32.7491, "restantePct12m": 67.2509}, {"periodo": "2009-06", "ano": 2009, "mes": 6, "pib": 275701200000.0, "impostos": 84620531681.99, "impostoPct": 30.6928, "restantePct": 69.3072, "pib12m": 3187957800000.0, "impostos12m": 1040646103105.84, "impostoPct12m": 32.643, "restantePct12m": 67.357}, {"periodo": "2009-07", "ano": 2009, "mes": 7, "pib": 285444200000.0, "impostos": 87895626842.36, "impostoPct": 30.7926, "restantePct": 69.2074, "pib12m": 3195306400000.0, "impostos12m": 1040487585693.32, "impostoPct12m": 32.563, "restantePct12m": 67.437}, {"periodo": "2009-08", "ano": 2009, "mes": 8, "pib": 284240400000.0, "impostos": 83061952084.21, "impostoPct": 29.2224, "restantePct": 70.7776, "pib12m": 3210311200000.0, "impostos12m": 1040252720798.6, "impostoPct12m": 32.4035, "restantePct12m": 67.5965}, {"periodo": "2009-09", "ano": 2009, "mes": 9, "pib": 283157900000.0, "impostos": 82932122619.32, "impostoPct": 29.2883, "restantePct": 70.7117, "pib12m": 3228197900000.0, "impostos12m": 1037246228837.76, "impostoPct12m": 32.1308, "restantePct12m": 67.8692}, {"periodo": "2009-10", "ano": 2009, "mes": 10, "pib": 301895900000.0, "impostos": 98672054820.47, "impostoPct": 32.6841, "restantePct": 67.3159, "pib12m": 3249571300000.0, "impostos12m": 1043311121650.6, "impostoPct12m": 32.1061, "restantePct12m": 67.8939}, {"periodo": "2009-11", "ano": 2009, "mes": 11, "pib": 305048800000.0, "impostos": 100872274736.05, "impostoPct": 33.0676, "restantePct": 66.9324, "pib12m": 3283921300000.0, "impostos12m": 1059627787926.07, "impostoPct12m": 32.2671, "restantePct12m": 67.7329}, {"periodo": "2009-12", "ano": 2009, "mes": 12, "pib": 313522800000.0, "impostos": 107386495893.01, "impostoPct": 34.2516, "restantePct": 65.7484, "pib12m": 3333039300000.0, "impostos12m": 1069532649156.03, "impostoPct12m": 32.0888, "restantePct12m": 67.9112}, {"periodo": "2010-01", "ano": 2010, "mes": 1, "pib": 288972800000.0, "impostos": 111950741193.79, "impostoPct": 38.7409, "restantePct": 61.2591, "pib12m": 3372077700000.0, "impostos12m": 1086469602490.47, "impostoPct12m": 32.2196, "restantePct12m": 67.7804}, {"periodo": "2010-02", "ano": 2010, "mes": 2, "pib": 285723200000.0, "impostos": 89012862608.11, "impostoPct": 31.1535, "restantePct": 68.8465, "pib12m": 3413776400000.0, "impostos12m": 1099079886435.41, "impostoPct12m": 32.1954, "restantePct12m": 67.8046}, {"periodo": "2010-03", "ano": 2010, "mes": 3, "pib": 311651600000.0, "impostos": 97373248944.95, "impostoPct": 31.2443, "restantePct": 68.7557, "pib12m": 3463246300000.0, "impostos12m": 1111498927286.04, "impostoPct12m": 32.0941, "restantePct12m": 67.9059}, {"periodo": "2010-04", "ano": 2010, "mes": 4, "pib": 307083500000.0, "impostos": 106034114165.05, "impostoPct": 34.5294, "restantePct": 65.4706, "pib12m": 3510766300000.0, "impostos12m": 1130458739377.56, "impostoPct12m": 32.1998, "restantePct12m": 67.8002}, {"periodo": "2010-05", "ano": 2010, "mes": 5, "pib": 315988400000.0, "impostos": 98637964973.46, "impostoPct": 31.2157, "restantePct": 68.7843, "pib12m": 3558430700000.0, "impostos12m": 1148449990562.78, "impostoPct12m": 32.2741, "restantePct12m": 67.7259}, {"periodo": "2010-06", "ano": 2010, "mes": 6, "pib": 321023200000.0, "impostos": 98773081146.75, "impostoPct": 30.7682, "restantePct": 69.2318, "pib12m": 3603752700000.0, "impostos12m": 1162602540027.54, "impostoPct12m": 32.2609, "restantePct12m": 67.7391}, {"periodo": "2010-07", "ano": 2010, "mes": 7, "pib": 332454200000.0, "impostos": 102911811504.69, "impostoPct": 30.9552, "restantePct": 69.0448, "pib12m": 3650762700000.0, "impostos12m": 1177618724689.87, "impostoPct12m": 32.2568, "restantePct12m": 67.7432}, {"periodo": "2010-08", "ano": 2010, "mes": 8, "pib": 334225600000.0, "impostos": 101845753489.16, "impostoPct": 30.4722, "restantePct": 69.5278, "pib12m": 3700747900000.0, "impostos12m": 1196402526094.83, "impostoPct12m": 32.3287, "restantePct12m": 67.6713}, {"periodo": "2010-09", "ano": 2010, "mes": 9, "pib": 331255900000.0, "impostos": 104311056501.31, "impostoPct": 31.4896, "restantePct": 68.5104, "pib12m": 3748845900000.0, "impostos12m": 1217781459976.81, "impostoPct12m": 32.4842, "restantePct12m": 67.5158}, {"periodo": "2010-10", "ano": 2010, "mes": 10, "pib": 344963800000.0, "impostos": 115758228680.12, "impostoPct": 33.5566, "restantePct": 66.4434, "pib12m": 3791913800000.0, "impostos12m": 1234867633836.46, "impostoPct12m": 32.5658, "restantePct12m": 67.4342}, {"periodo": "2010-11", "ano": 2010, "mes": 11, "pib": 356707500000.0, "impostos": 109926952392.26, "impostoPct": 30.8171, "restantePct": 69.1829, "pib12m": 3843572500000.0, "impostos12m": 1243922311492.67, "impostoPct12m": 32.3637, "restantePct12m": 67.6363}, {"periodo": "2010-12", "ano": 2010, "mes": 12, "pib": 355797400000.0, "impostos": 137345983816.09, "impostoPct": 38.6023, "restantePct": 61.3977, "pib12m": 3885847100000.0, "impostos12m": 1273881799415.74, "impostoPct12m": 32.7826, "restantePct12m": 67.2174}, {"periodo": "2011-01", "ano": 2011, "mes": 1, "pib": 333255600000.0, "impostos": 140295467848.4, "impostoPct": 42.0985, "restantePct": 57.9015, "pib12m": 3930129900000.0, "impostos12m": 1302226526070.35, "impostoPct12m": 33.1344, "restantePct12m": 66.8656}, {"periodo": "2011-02", "ano": 2011, "mes": 2, "pib": 334982000000.0, "impostos": 112632132805.63, "impostoPct": 33.6233, "restantePct": 66.3767, "pib12m": 3979388700000.0, "impostos12m": 1325845796267.87, "impostoPct12m": 33.3178, "restantePct12m": 66.6822}, {"periodo": "2011-03", "ano": 2011, "mes": 3, "pib": 347879600000.0, "impostos": 114887947333.96, "impostoPct": 33.0252, "restantePct": 66.9748, "pib12m": 4015616700000.0, "impostos12m": 1343360494656.87, "impostoPct12m": 33.4534, "restantePct12m": 66.5466}, {"periodo": "2011-04", "ano": 2011, "mes": 4, "pib": 349049300000.0, "impostos": 128498125743.03, "impostoPct": 36.8137, "restantePct": 63.1863, "pib12m": 4057582500000.0, "impostos12m": 1365824506234.85, "impostoPct12m": 33.661, "restantePct12m": 66.339}, {"periodo": "2011-05", "ano": 2011, "mes": 5, "pib": 366256200000.0, "impostos": 115212391462.1, "impostoPct": 31.4568, "restantePct": 68.5432, "pib12m": 4107850300000.0, "impostos12m": 1382398932723.48, "impostoPct12m": 33.6526, "restantePct12m": 66.3474}, {"periodo": "2011-06", "ano": 2011, "mes": 6, "pib": 370951200000.0, "impostos": 126377124030.31, "impostoPct": 34.0684, "restantePct": 65.9316, "pib12m": 4157778300000.0, "impostos12m": 1410002975607.04, "impostoPct12m": 33.9124, "restantePct12m": 66.0876}, {"periodo": "2011-07", "ano": 2011, "mes": 7, "pib": 373143300000.0, "impostos": 133757577870.77, "impostoPct": 35.8462, "restantePct": 64.1538, "pib12m": 4198467400000.0, "impostos12m": 1440848741973.12, "impostoPct12m": 34.3184, "restantePct12m": 65.6816}, {"periodo": "2011-08", "ano": 2011, "mes": 8, "pib": 376769300000.0, "impostos": 119424169006.54, "impostoPct": 31.6969, "restantePct": 68.3031, "pib12m": 4241011100000.0, "impostos12m": 1458427157490.49, "impostoPct12m": 34.3887, "restantePct12m": 65.6113}, {"periodo": "2011-09", "ano": 2011, "mes": 9, "pib": 361724600000.0, "impostos": 119767122464.99, "impostoPct": 33.11, "restantePct": 66.89, "pib12m": 4271479800000.0, "impostos12m": 1473883223454.18, "impostoPct12m": 34.5052, "restantePct12m": 65.4948}, {"periodo": "2011-10", "ano": 2011, "mes": 10, "pib": 378491000000.0, "impostos": 133800853217.45, "impostoPct": 35.3511, "restantePct": 64.6489, "pib12m": 4305007000000.0, "impostos12m": 1491925847991.51, "impostoPct12m": 34.6556, "restantePct12m": 65.3444}, {"periodo": "2011-11", "ano": 2011, "mes": 11, "pib": 389560800000.0, "impostos": 123897496246.7, "impostoPct": 31.8044, "restantePct": 68.1956, "pib12m": 4337860300000.0, "impostos12m": 1505896391845.95, "impostoPct12m": 34.7152, "restantePct12m": 65.2848}, {"periodo": "2011-12", "ano": 2011, "mes": 12, "pib": 391595100000.0, "impostos": 149165796654.16, "impostoPct": 38.0918, "restantePct": 61.9082, "pib12m": 4373658000000.0, "impostos12m": 1517716204684.02, "impostoPct12m": 34.7013, "restantePct12m": 65.2987}, {"periodo": "2012-01", "ano": 2012, "mes": 1, "pib": 367215400000.0, "impostos": 158080383280.26, "impostoPct": 43.0484, "restantePct": 56.9516, "pib12m": 4407617800000.0, "impostos12m": 1535501120115.88, "impostoPct12m": 34.8374, "restantePct12m": 65.1626}, {"periodo": "2012-02", "ano": 2012, "mes": 2, "pib": 367177300000.0, "impostos": 118258165887.57, "impostoPct": 32.2074, "restantePct": 67.7926, "pib12m": 4439813100000.0, "impostos12m": 1541127153197.82, "impostoPct12m": 34.7115, "restantePct12m": 65.2885}, {"periodo": "2012-03", "ano": 2012, "mes": 3, "pib": 392996500000.0, "impostos": 131816637296.25, "impostoPct": 33.5414, "restantePct": 66.4586, "pib12m": 4484930000000.0, "impostos12m": 1558055843160.11, "impostoPct12m": 34.7398, "restantePct12m": 65.2602}, {"periodo": "2012-04", "ano": 2012, "mes": 4, "pib": 381795300000.0, "impostos": 141313619059.96, "impostoPct": 37.0129, "restantePct": 62.9871, "pib12m": 4517676000000.0, "impostos12m": 1570871336477.04, "impostoPct12m": 34.7717, "restantePct12m": 65.2283}, {"periodo": "2012-05", "ano": 2012, "mes": 5, "pib": 400281300000.0, "impostos": 126468702936.12, "impostoPct": 31.595, "restantePct": 68.405, "pib12m": 4551701100000.0, "impostos12m": 1582127647951.05, "impostoPct12m": 34.759, "restantePct12m": 65.241}, {"periodo": "2012-06", "ano": 2012, "mes": 6, "pib": 398714500000.0, "impostos": 129068586661.27, "impostoPct": 32.3712, "restantePct": 67.6288, "pib12m": 4579464400000.0, "impostos12m": 1584819110582.01, "impostoPct12m": 34.6071, "restantePct12m": 65.3929}, {"periodo": "2012-07", "ano": 2012, "mes": 7, "pib": 414617400000.0, "impostos": 136575233914.37, "impostoPct": 32.9401, "restantePct": 67.0599, "pib12m": 4620938500000.0, "impostos12m": 1587636766625.61, "impostoPct12m": 34.3575, "restantePct12m": 65.6425}, {"periodo": "2012-08", "ano": 2012, "mes": 8, "pib": 419906300000.0, "impostos": 122393311604.81, "impostoPct": 29.1478, "restantePct": 70.8522, "pib12m": 4664075500000.0, "impostos12m": 1590605909223.88, "impostoPct12m": 34.1033, "restantePct12m": 65.8967}, {"periodo": "2012-09", "ano": 2012, "mes": 9, "pib": 393524700000.0, "impostos": 126885163178.03, "impostoPct": 32.2433, "restantePct": 67.7567, "pib12m": 4695875600000.0, "impostos12m": 1597723949936.92, "impostoPct12m": 34.024, "restantePct12m": 65.976}, {"periodo": "2012-10", "ano": 2012, "mes": 10, "pib": 422672100000.0, "impostos": 139903532301.41, "impostoPct": 33.0998, "restantePct": 66.9002, "pib12m": 4740056700000.0, "impostos12m": 1603826629020.88, "impostoPct12m": 33.8356, "restantePct12m": 66.1644}, {"periodo": "2012-11", "ano": 2012, "mes": 11, "pib": 423816400000.0, "impostos": 134191478756.35, "impostoPct": 31.6626, "restantePct": 68.3374, "pib12m": 4774312300000.0, "impostos12m": 1614120611530.54, "impostoPct12m": 33.8084, "restantePct12m": 66.1916}, {"periodo": "2012-12", "ano": 2012, "mes": 12, "pib": 423195900000.0, "impostos": 164061377820.56, "impostoPct": 38.7672, "restantePct": 61.2328, "pib12m": 4805913100000.0, "impostos12m": 1629016192696.93, "impostoPct12m": 33.8961, "restantePct12m": 66.1039}, {"periodo": "2013-01", "ano": 2013, "mes": 1, "pib": 414131800000.0, "impostos": 177991816900.68, "impostoPct": 42.9795, "restantePct": 57.0205, "pib12m": 4852829500000.0, "impostos12m": 1648927626317.36, "impostoPct12m": 33.9787, "restantePct12m": 66.0213}, {"periodo": "2013-02", "ano": 2013, "mes": 2, "pib": 398645400000.0, "impostos": 128948847108.8, "impostoPct": 32.3468, "restantePct": 67.6532, "pib12m": 4884297600000.0, "impostos12m": 1659618307538.59, "impostoPct12m": 33.9786, "restantePct12m": 66.0214}, {"periodo": "2013-03", "ano": 2013, "mes": 3, "pib": 427409800000.0, "impostos": 132635882527.42, "impostoPct": 31.0325, "restantePct": 68.9675, "pib12m": 4918710900000.0, "impostos12m": 1660437552769.76, "impostoPct12m": 33.7576, "restantePct12m": 66.2424}, {"periodo": "2013-04", "ano": 2013, "mes": 4, "pib": 438856800000.0, "impostos": 153087194243.96, "impostoPct": 34.8832, "restantePct": 65.1168, "pib12m": 4975772400000.0, "impostos12m": 1672211127953.76, "impostoPct12m": 33.6071, "restantePct12m": 66.3929}, {"periodo": "2013-05", "ano": 2013, "mes": 5, "pib": 439054200000.0, "impostos": 143003597725.74, "impostoPct": 32.5708, "restantePct": 67.4292, "pib12m": 5014545300000.0, "impostos12m": 1688746022743.39, "impostoPct12m": 33.677, "restantePct12m": 66.323}, {"periodo": "2013-06", "ano": 2013, "mes": 6, "pib": 442857000000.0, "impostos": 142415125084.65, "impostoPct": 32.1583, "restantePct": 67.8417, "pib12m": 5058687800000.0, "impostos12m": 1702092561166.77, "impostoPct12m": 33.6469, "restantePct12m": 66.3531}, {"periodo": "2013-07", "ano": 2013, "mes": 7, "pib": 458458900000.0, "impostos": 149066385624.41, "impostoPct": 32.5147, "restantePct": 67.4853, "pib12m": 5102529300000.0, "impostos12m": 1714583712876.82, "impostoPct12m": 33.6026, "restantePct12m": 66.3974}, {"periodo": "2013-08", "ano": 2013, "mes": 8, "pib": 452862200000.0, "impostos": 138141254081.76, "impostoPct": 30.504, "restantePct": 69.496, "pib12m": 5135485200000.0, "impostos12m": 1730331655353.78, "impostoPct12m": 33.6936, "restantePct12m": 66.3064}, {"periodo": "2013-09", "ano": 2013, "mes": 9, "pib": 438766700000.0, "impostos": 140200319909.92, "impostoPct": 31.9533, "restantePct": 68.0467, "pib12m": 5180727200000.0, "impostos12m": 1743646812085.67, "impostoPct12m": 33.6564, "restantePct12m": 66.3436}, {"periodo": "2013-10", "ano": 2013, "mes": 10, "pib": 466166000000.0, "impostos": 157334664458.57, "impostoPct": 33.7508, "restantePct": 66.2492, "pib12m": 5224221100000.0, "impostos12m": 1761077944242.83, "impostoPct12m": 33.7099, "restantePct12m": 66.2901}, {"periodo": "2013-11", "ano": 2013, "mes": 11, "pib": 465693800000.0, "impostos": 168970479603.35, "impostoPct": 36.2836, "restantePct": 63.7164, "pib12m": 5266098500000.0, "impostos12m": 1795856945089.82, "impostoPct12m": 34.1022, "restantePct12m": 65.8978}, {"periodo": "2013-12", "ano": 2013, "mes": 12, "pib": 473552500000.0, "impostos": 180474977028.82, "impostoPct": 38.1109, "restantePct": 61.8891, "pib12m": 5316455100000.0, "impostos12m": 1812270544298.09, "impostoPct12m": 34.0879, "restantePct12m": 65.9121}, {"periodo": "2014-01", "ano": 2014, "mes": 1, "pib": 455935000000.0, "impostos": 191589653330.12, "impostoPct": 42.0213, "restantePct": 57.9787, "pib12m": 5358258300000.0, "impostos12m": 1825868380727.52, "impostoPct12m": 34.0758, "restantePct12m": 65.9242}, {"periodo": "2014-02", "ano": 2014, "mes": 2, "pib": 450358800000.0, "impostos": 142906034807.52, "impostoPct": 31.7316, "restantePct": 68.2684, "pib12m": 5409971700000.0, "impostos12m": 1839825568426.24, "impostoPct12m": 34.008, "restantePct12m": 65.992}, {"periodo": "2014-03", "ano": 2014, "mes": 3, "pib": 462159800000.0, "impostos": 145429429574.89, "impostoPct": 31.4673, "restantePct": 68.5327, "pib12m": 5444721700000.0, "impostos12m": 1852619115473.71, "impostoPct12m": 34.026, "restantePct12m": 65.974}, {"periodo": "2014-04", "ano": 2014, "mes": 4, "pib": 468767500000.0, "impostos": 164169562657.17, "impostoPct": 35.0215, "restantePct": 64.9785, "pib12m": 5474632400000.0, "impostos12m": 1863701483886.93, "impostoPct12m": 34.0425, "restantePct12m": 65.9575}, {"periodo": "2014-05", "ano": 2014, "mes": 5, "pib": 473347100000.0, "impostos": 146509931175.69, "impostoPct": 30.9519, "restantePct": 69.0481, "pib12m": 5508925300000.0, "impostos12m": 1867207817336.88, "impostoPct12m": 33.8942, "restantePct12m": 66.1058}, {"periodo": "2014-06", "ano": 2014, "mes": 6, "pib": 458516500000.0, "impostos": 149362853865.48, "impostoPct": 32.5752, "restantePct": 67.4248, "pib12m": 5524584800000.0, "impostos12m": 1874155546117.71, "impostoPct12m": 33.9239, "restantePct12m": 66.0761}, {"periodo": "2014-07", "ano": 2014, "mes": 7, "pib": 481994000000.0, "impostos": 156962449730.82, "impostoPct": 32.5652, "restantePct": 67.4348, "pib12m": 5548119900000.0, "impostos12m": 1882051610224.12, "impostoPct12m": 33.9223, "restantePct12m": 66.0777}, {"periodo": "2014-08", "ano": 2014, "mes": 8, "pib": 477052900000.0, "impostos": 152636532210.43, "impostoPct": 31.9957, "restantePct": 68.0043, "pib12m": 5572310600000.0, "impostos12m": 1896546888352.78, "impostoPct12m": 34.0352, "restantePct12m": 65.9648}, {"periodo": "2014-09", "ano": 2014, "mes": 9, "pib": 476520600000.0, "impostos": 150830665717.17, "impostoPct": 31.6525, "restantePct": 68.3475, "pib12m": 5610064500000.0, "impostos12m": 1907177234160.02, "impostoPct12m": 33.9956, "restantePct12m": 66.0044}, {"periodo": "2014-10", "ano": 2014, "mes": 10, "pib": 493304700000.0, "impostos": 167389033387.71, "impostoPct": 33.9322, "restantePct": 66.0678, "pib12m": 5637203200000.0, "impostos12m": 1917231603089.16, "impostoPct12m": 34.0103, "restantePct12m": 65.9897}, {"periodo": "2014-11", "ano": 2014, "mes": 11, "pib": 489484400000.0, "impostos": 164184601343.99, "impostoPct": 33.5424, "restantePct": 66.4576, "pib12m": 5660993800000.0, "impostos12m": 1912445724829.8, "impostoPct12m": 33.7829, "restantePct12m": 66.2171}, {"periodo": "2014-12", "ano": 2014, "mes": 12, "pib": 499867700000.0, "impostos": 181975029905.02, "impostoPct": 36.4046, "restantePct": 63.5954, "pib12m": 5687309000000.0, "impostos12m": 1913945777706.01, "impostoPct12m": 33.6529, "restantePct12m": 66.3471}, {"periodo": "2015-01", "ano": 2015, "mes": 1, "pib": 472913900000.0, "impostos": 197737394517.67, "impostoPct": 41.8126, "restantePct": 58.1874, "pib12m": 5704287900000.0, "impostos12m": 1920093518893.56, "impostoPct12m": 33.6605, "restantePct12m": 66.3395}, {"periodo": "2015-02", "ano": 2015, "mes": 2, "pib": 460156700000.0, "impostos": 151744825387.78, "impostoPct": 32.9768, "restantePct": 67.0232, "pib12m": 5714085800000.0, "impostos12m": 1928932309473.82, "impostoPct12m": 33.7575, "restantePct12m": 66.2425}, {"periodo": "2015-03", "ano": 2015, "mes": 3, "pib": 501752200000.0, "impostos": 157779103069.24, "impostoPct": 31.4456, "restantePct": 68.5544, "pib12m": 5753678200000.0, "impostos12m": 1941281982968.17, "impostoPct12m": 33.7398, "restantePct12m": 66.2602}, {"periodo": "2015-04", "ano": 2015, "mes": 4, "pib": 486614600000.0, "impostos": 173485276069.23, "impostoPct": 35.6515, "restantePct": 64.3485, "pib12m": 5771525300000.0, "impostos12m": 1950597696380.23, "impostoPct12m": 33.7969, "restantePct12m": 66.2031}, {"periodo": "2015-05", "ano": 2015, "mes": 5, "pib": 483239700000.0, "impostos": 153652260957.24, "impostoPct": 31.7963, "restantePct": 68.2037, "pib12m": 5781417900000.0, "impostos12m": 1957740026161.79, "impostoPct12m": 33.8626, "restantePct12m": 66.1374}, {"periodo": "2015-06", "ano": 2015, "mes": 6, "pib": 486647500000.0, "impostos": 172555744724.96, "impostoPct": 35.4581, "restantePct": 64.5419, "pib12m": 5809548900000.0, "impostos12m": 1980932917021.26, "impostoPct12m": 34.0979, "restantePct12m": 65.9021}, {"periodo": "2015-07", "ano": 2015, "mes": 7, "pib": 502275200000.0, "impostos": 155229368139.56, "impostoPct": 30.9052, "restantePct": 69.0948, "pib12m": 5829830100000.0, "impostos12m": 1979199835430.0, "impostoPct12m": 33.9495, "restantePct12m": 66.0505}, {"periodo": "2015-08", "ano": 2015, "mes": 8, "pib": 492505700000.0, "impostos": 155592446660.54, "impostoPct": 31.592, "restantePct": 68.408, "pib12m": 5845282900000.0, "impostos12m": 1982155749880.12, "impostoPct12m": 33.9103, "restantePct12m": 66.0897}, {"periodo": "2015-09", "ano": 2015, "mes": 9, "pib": 496004700000.0, "impostos": 158384003978.62, "impostoPct": 31.932, "restantePct": 68.068, "pib12m": 5864767000000.0, "impostos12m": 1989709088141.57, "impostoPct12m": 33.9265, "restantePct12m": 66.0735}, {"periodo": "2015-10", "ano": 2015, "mes": 10, "pib": 518828900000.0, "impostos": 166910421378.75, "impostoPct": 32.1706, "restantePct": 67.8294, "pib12m": 5890291200000.0, "impostos12m": 1989230476132.62, "impostoPct12m": 33.7713, "restantePct12m": 66.2287}, {"periodo": "2015-11", "ano": 2015, "mes": 11, "pib": 513819800000.0, "impostos": 158241041914.27, "impostoPct": 30.797, "restantePct": 69.203, "pib12m": 5914626600000.0, "impostos12m": 1983286916702.89, "impostoPct12m": 33.5319, "restantePct12m": 66.4681}, {"periodo": "2015-12", "ano": 2015, "mes": 12, "pib": 521918700000.0, "impostos": 191556575242.65, "impostoPct": 36.7024, "restantePct": 63.2976, "pib12m": 5936677600000.0, "impostos12m": 1992868462040.52, "impostoPct12m": 33.5688, "restantePct12m": 66.4312}, {"periodo": "2016-01", "ano": 2016, "mes": 1, "pib": 490284000000.0, "impostos": 196283475495.93, "impostoPct": 40.0346, "restantePct": 59.9654, "pib12m": 5954047700000.0, "impostos12m": 1991414543018.78, "impostoPct12m": 33.4464, "restantePct12m": 66.5536}, {"periodo": "2016-02", "ano": 2016, "mes": 2, "pib": 491011700000.0, "impostos": 147101826163.13, "impostoPct": 29.9589, "restantePct": 70.0411, "pib12m": 5984902700000.0, "impostos12m": 1986771543794.13, "impostoPct12m": 33.1964, "restantePct12m": 66.8036}, {"periodo": "2016-03", "ano": 2016, "mes": 3, "pib": 516985900000.0, "impostos": 166947520994.34, "impostoPct": 32.2925, "restantePct": 67.7075, "pib12m": 6000136400000.0, "impostos12m": 1995939961719.23, "impostoPct12m": 33.2649, "restantePct12m": 66.7351}, {"periodo": "2016-04", "ano": 2016, "mes": 4, "pib": 508058700000.0, "impostos": 156529235705.18, "impostoPct": 30.8093, "restantePct": 69.1907, "pib12m": 6021580500000.0, "impostos12m": 1978983921355.18, "impostoPct12m": 32.8649, "restantePct12m": 67.1351}, {"periodo": "2016-05", "ano": 2016, "mes": 5, "pib": 513267500000.0, "impostos": 154150015989.43, "impostoPct": 30.0331, "restantePct": 69.9669, "pib12m": 6051608300000.0, "impostos12m": 1979481676387.37, "impostoPct12m": 32.71, "restantePct12m": 67.29}, {"periodo": "2016-06", "ano": 2016, "mes": 6, "pib": 536459300000.0, "impostos": 158793101161.66, "impostoPct": 29.6002, "restantePct": 70.3998, "pib12m": 6101420100000.0, "impostos12m": 1965719032824.07, "impostoPct12m": 32.2174, "restantePct12m": 67.7826}, {"periodo": "2016-07", "ano": 2016, "mes": 7, "pib": 532947800000.0, "impostos": 171277882371.89, "impostoPct": 32.1378, "restantePct": 67.8622, "pib12m": 6132092700000.0, "impostos12m": 1981767547056.4, "impostoPct12m": 32.318, "restantePct12m": 67.682}, {"periodo": "2016-08", "ano": 2016, "mes": 8, "pib": 534761800000.0, "impostos": 157856149232.2, "impostoPct": 29.519, "restantePct": 70.481, "pib12m": 6174348800000.0, "impostos12m": 1984031249628.06, "impostoPct12m": 32.1334, "restantePct12m": 67.8666}, {"periodo": "2016-09", "ano": 2016, "mes": 9, "pib": 509975000000.0, "impostos": 161143642477.73, "impostoPct": 31.5983, "restantePct": 68.4017, "pib12m": 6188319100000.0, "impostos12m": 1986790888127.17, "impostoPct12m": 32.1055, "restantePct12m": 67.8945}, {"periodo": "2016-10", "ano": 2016, "mes": 10, "pib": 525162700000.0, "impostos": 172792432132.36, "impostoPct": 32.9026, "restantePct": 67.0974, "pib12m": 6194652900000.0, "impostos12m": 1992672898880.77, "impostoPct12m": 32.1676, "restantePct12m": 67.8324}, {"periodo": "2016-11", "ano": 2016, "mes": 11, "pib": 541530700000.0, "impostos": 172283149463.73, "impostoPct": 31.8141, "restantePct": 68.1859, "pib12m": 6222363800000.0, "impostos12m": 2006715006430.24, "impostoPct12m": 32.25, "restantePct12m": 67.75}, {"periodo": "2016-12", "ano": 2016, "mes": 12, "pib": 565780500000.0, "impostos": 189378099901.73, "impostoPct": 33.472, "restantePct": 66.528, "pib12m": 6266225600000.0, "impostos12m": 2004536531089.32, "impostoPct12m": 31.9895, "restantePct12m": 68.0105}, {"periodo": "2017-01", "ano": 2017, "mes": 1, "pib": 526564700000.0, "impostos": 227789982444.96, "impostoPct": 43.2596, "restantePct": 56.7404, "pib12m": 6302506300000.0, "impostos12m": 2036043038038.35, "impostoPct12m": 32.3053, "restantePct12m": 67.6947}, {"periodo": "2017-02", "ano": 2017, "mes": 2, "pib": 514120500000.0, "impostos": 168876226519.79, "impostoPct": 32.8476, "restantePct": 67.1524, "pib12m": 6325615100000.0, "impostos12m": 2057817438395.02, "impostoPct12m": 32.5315, "restantePct12m": 67.4685}, {"periodo": "2017-03", "ano": 2017, "mes": 3, "pib": 544312900000.0, "impostos": 167510509909.29, "impostoPct": 30.7747, "restantePct": 69.2253, "pib12m": 6352942100000.0, "impostos12m": 2058380427309.96, "impostoPct12m": 32.4004, "restantePct12m": 67.5996}, {"periodo": "2017-04", "ano": 2017, "mes": 4, "pib": 525238100000.0, "impostos": 184198313283.25, "impostoPct": 35.0695, "restantePct": 64.9305, "pib12m": 6370121500000.0, "impostos12m": 2086049504888.03, "impostoPct12m": 32.7474, "restantePct12m": 67.2526}, {"periodo": "2017-05", "ano": 2017, "mes": 5, "pib": 548887700000.0, "impostos": 166122737700.11, "impostoPct": 30.2653, "restantePct": 69.7347, "pib12m": 6405741700000.0, "impostos12m": 2098022226598.7, "impostoPct12m": 32.7522, "restantePct12m": 67.2478}, {"periodo": "2017-06", "ano": 2017, "mes": 6, "pib": 556787600000.0, "impostos": 169261223062.04, "impostoPct": 30.3996, "restantePct": 69.6004, "pib12m": 6426070000000.0, "impostos12m": 2108490348499.08, "impostoPct12m": 32.8115, "restantePct12m": 67.1885}, {"periodo": "2017-07", "ano": 2017, "mes": 7, "pib": 557458200000.0, "impostos": 176373045993.03, "impostoPct": 31.6388, "restantePct": 68.3612, "pib12m": 6450580400000.0, "impostos12m": 2113585512120.22, "impostoPct12m": 32.7658, "restantePct12m": 67.2342}, {"periodo": "2017-08", "ano": 2017, "mes": 8, "pib": 555578700000.0, "impostos": 163493663665.99, "impostoPct": 29.4276, "restantePct": 70.5724, "pib12m": 6471397300000.0, "impostos12m": 2119223026554.01, "impostoPct12m": 32.7475, "restantePct12m": 67.2525}, {"periodo": "2017-09", "ano": 2017, "mes": 9, "pib": 528871200000.0, "impostos": 166820851855.2, "impostoPct": 31.5428, "restantePct": 68.4572, "pib12m": 6490293500000.0, "impostos12m": 2124900235931.47, "impostoPct12m": 32.7397, "restantePct12m": 67.2603}, {"periodo": "2017-10", "ano": 2017, "mes": 10, "pib": 549304700000.0, "impostos": 198783645796.67, "impostoPct": 36.1882, "restantePct": 63.8118, "pib12m": 6514435500000.0, "impostos12m": 2150891449595.79, "impostoPct12m": 33.0173, "restantePct12m": 66.9827}, {"periodo": "2017-11", "ano": 2017, "mes": 11, "pib": 566209300000.0, "impostos": 176654405353.0, "impostoPct": 31.1995, "restantePct": 68.8005, "pib12m": 6539114100000.0, "impostos12m": 2155262705485.06, "impostoPct12m": 32.9596, "restantePct12m": 67.0404}, {"periodo": "2017-12", "ano": 2017, "mes": 12, "pib": 588892800000.0, "impostos": 206169213659.46, "impostoPct": 35.0096, "restantePct": 64.9904, "pib12m": 6562226400000.0, "impostos12m": 2172053819242.78, "impostoPct12m": 33.0993, "restantePct12m": 66.9007}, {"periodo": "2018-01", "ano": 2018, "mes": 1, "pib": 555644600000.0, "impostos": 241228785331.05, "impostoPct": 43.4142, "restantePct": 56.5858, "pib12m": 6591306300000.0, "impostos12m": 2185492622128.87, "impostoPct12m": 33.1572, "restantePct12m": 66.8428}, {"periodo": "2018-02", "ano": 2018, "mes": 2, "pib": 528905500000.0, "impostos": 175404039831.42, "impostoPct": 33.1636, "restantePct": 66.8364, "pib12m": 6606091300000.0, "impostos12m": 2192020435440.5, "impostoPct12m": 33.1818, "restantePct12m": 66.8182}, {"periodo": "2018-03", "ano": 2018, "mes": 3, "pib": 560120700000.0, "impostos": 185387667807.96, "impostoPct": 33.0978, "restantePct": 66.9022, "pib12m": 6621899100000.0, "impostos12m": 2209897593339.17, "impostoPct12m": 33.3726, "restantePct12m": 66.6274}, {"periodo": "2018-04", "ano": 2018, "mes": 4, "pib": 559359800000.0, "impostos": 202751149479.78, "impostoPct": 36.247, "restantePct": 63.753, "pib12m": 6656020800000.0, "impostos12m": 2228450429535.7, "impostoPct12m": 33.4802, "restantePct12m": 66.5198}, {"periodo": "2018-05", "ano": 2018, "mes": 5, "pib": 547016500000.0, "impostos": 178836143402.78, "impostoPct": 32.693, "restantePct": 67.307, "pib12m": 6654149600000.0, "impostos12m": 2241163835238.37, "impostoPct12m": 33.6807, "restantePct12m": 66.3193}, {"periodo": "2018-06", "ano": 2018, "mes": 6, "pib": 580697800000.0, "impostos": 188565588163.66, "impostoPct": 32.4722, "restantePct": 67.5278, "pib12m": 6678059800000.0, "impostos12m": 2260468200340.0, "impostoPct12m": 33.8492, "restantePct12m": 66.1508}, {"periodo": "2018-07", "ano": 2018, "mes": 7, "pib": 583054800000.0, "impostos": 193727345197.56, "impostoPct": 33.2263, "restantePct": 66.7737, "pib12m": 6703656400000.0, "impostos12m": 2277822499544.53, "impostoPct12m": 33.9788, "restantePct12m": 66.0212}, {"periodo": "2018-08", "ano": 2018, "mes": 8, "pib": 582756700000.0, "impostos": 184876514022.34, "impostoPct": 31.7245, "restantePct": 68.2755, "pib12m": 6730834400000.0, "impostos12m": 2299205349900.88, "impostoPct12m": 34.1593, "restantePct12m": 65.8407}, {"periodo": "2018-09", "ano": 2018, "mes": 9, "pib": 556776600000.0, "impostos": 186707047135.82, "impostoPct": 33.5336, "restantePct": 66.4664, "pib12m": 6758739800000.0, "impostos12m": 2319091545181.51, "impostoPct12m": 34.3125, "restantePct12m": 65.6875}, {"periodo": "2018-10", "ano": 2018, "mes": 10, "pib": 591983900000.0, "impostos": 227210673848.77, "impostoPct": 38.3812, "restantePct": 61.6188, "pib12m": 6801419000000.0, "impostos12m": 2347518573233.6, "impostoPct12m": 34.5151, "restantePct12m": 65.4849}, {"periodo": "2018-11", "ano": 2018, "mes": 11, "pib": 593926900000.0, "impostos": 196275279540.67, "impostoPct": 33.047, "restantePct": 66.953, "pib12m": 6829136600000.0, "impostos12m": 2367139447421.27, "impostoPct12m": 34.6624, "restantePct12m": 65.3376}, {"periodo": "2018-12", "ano": 2018, "mes": 12, "pib": 603155200000.0, "impostos": 227571215030.61, "impostoPct": 37.7301, "restantePct": 62.2699, "pib12m": 6843399000000.0, "impostos12m": 2388541448792.43, "impostoPct12m": 34.9029, "restantePct12m": 65.0971}, {"periodo": "2019-01", "ano": 2019, "mes": 1, "pib": 578452600000.0, "impostos": 258231761439.48, "impostoPct": 44.6418, "restantePct": 55.3582, "pib12m": 6866207000000.0, "impostos12m": 2405544424900.86, "impostoPct12m": 35.0345, "restantePct12m": 64.9655}, {"periodo": "2019-02", "ano": 2019, "mes": 2, "pib": 567984500000.0, "impostos": 187488048829.19, "impostoPct": 33.0094, "restantePct": 66.9906, "pib12m": 6905286000000.0, "impostos12m": 2417628433898.63, "impostoPct12m": 35.0113, "restantePct12m": 64.9887}, {"periodo": "2019-03", "ano": 2019, "mes": 3, "pib": 579172600000.0, "impostos": 193910392135.54, "impostoPct": 33.4806, "restantePct": 66.5194, "pib12m": 6924337900000.0, "impostos12m": 2426151158226.21, "impostoPct12m": 35.038, "restantePct12m": 64.962}, {"periodo": "2019-04", "ano": 2019, "mes": 4, "pib": 592916000000.0, "impostos": 215617224805.38, "impostoPct": 36.3656, "restantePct": 63.6344, "pib12m": 6957894100000.0, "impostos12m": 2439017233551.81, "impostoPct12m": 35.054, "restantePct12m": 64.946}, {"periodo": "2019-05", "ano": 2019, "mes": 5, "pib": 604607400000.0, "impostos": 190523786960.91, "impostoPct": 31.512, "restantePct": 68.488, "pib12m": 7015485000000.0, "impostos12m": 2450704877109.94, "impostoPct12m": 34.9328, "restantePct12m": 65.0672}, {"periodo": "2019-06", "ano": 2019, "mes": 6, "pib": 598283000000.0, "impostos": 194534453411.22, "impostoPct": 32.5155, "restantePct": 67.4845, "pib12m": 7033070200000.0, "impostos12m": 2456673742357.49, "impostoPct12m": 34.9303, "restantePct12m": 65.0697}, {"periodo": "2019-07", "ano": 2019, "mes": 7, "pib": 627049700000.0, "impostos": 203540503463.59, "impostoPct": 32.46, "restantePct": 67.54, "pib12m": 7077065100000.0, "impostos12m": 2466486900623.52, "impostoPct12m": 34.8518, "restantePct12m": 65.1482}, {"periodo": "2019-08", "ano": 2019, "mes": 8, "pib": 616157600000.0, "impostos": 194422513544.38, "impostoPct": 31.554, "restantePct": 68.446, "pib12m": 7110466000000.0, "impostos12m": 2476032900145.56, "impostoPct12m": 34.8224, "restantePct12m": 65.1776}, {"periodo": "2019-09", "ano": 2019, "mes": 9, "pib": 614187900000.0, "impostos": 195805899054.75, "impostoPct": 31.8805, "restantePct": 68.1195, "pib12m": 7167877300000.0, "impostos12m": 2485131752064.49, "impostoPct12m": 34.6704, "restantePct12m": 65.3296}, {"periodo": "2019-10", "ano": 2019, "mes": 10, "pib": 641340100000.0, "impostos": 228009455131.23, "impostoPct": 35.552, "restantePct": 64.448, "pib12m": 7217233500000.0, "impostos12m": 2485930533346.94, "impostoPct12m": 34.4444, "restantePct12m": 65.5556}, {"periodo": "2019-11", "ano": 2019, "mes": 11, "pib": 634826200000.0, "impostos": 206322483898.48, "impostoPct": 32.5006, "restantePct": 67.4994, "pib12m": 7258132800000.0, "impostos12m": 2495977737704.75, "impostoPct12m": 34.3887, "restantePct12m": 65.6113}, {"periodo": "2019-12", "ano": 2019, "mes": 12, "pib": 646343100000.0, "impostos": 236447425855.35, "impostoPct": 36.5823, "restantePct": 63.4177, "pib12m": 7301320700000.0, "impostos12m": 2504853948529.48, "impostoPct12m": 34.3069, "restantePct12m": 65.6931}, {"periodo": "2020-01", "ano": 2020, "mes": 1, "pib": 617747200000.0, "impostos": 212748114053.55, "impostoPct": 34.4393, "restantePct": 65.5607, "pib12m": 7340615300000.0, "impostos12m": 2459370301143.55, "impostoPct12m": 33.5036, "restantePct12m": 66.4964}, {"periodo": "2020-02", "ano": 2020, "mes": 2, "pib": 609810800000.0, "impostos": 156791696761.93, "impostoPct": 25.7115, "restantePct": 74.2885, "pib12m": 7382441600000.0, "impostos12m": 2428673949076.29, "impostoPct12m": 32.898, "restantePct12m": 67.102}, {"periodo": "2020-03", "ano": 2020, "mes": 3, "pib": 616335300000.0, "impostos": 157079378196.38, "impostoPct": 25.486, "restantePct": 74.514, "pib12m": 7419604300000.0, "impostos12m": 2391842935137.13, "impostoPct12m": 32.2368, "restantePct12m": 67.7632}, {"periodo": "2020-04", "ano": 2020, "mes": 4, "pib": 555387400000.0, "impostos": 178286366944.9, "impostoPct": 32.1013, "restantePct": 67.8987, "pib12m": 7382075700000.0, "impostos12m": 2354512077276.65, "impostoPct12m": 31.895, "restantePct12m": 68.105}, {"periodo": "2020-05", "ano": 2020, "mes": 5, "pib": 561628400000.0, "impostos": 155798021581.19, "impostoPct": 27.7404, "restantePct": 72.2596, "pib12m": 7339096700000.0, "impostos12m": 2319786311896.93, "impostoPct12m": 31.6086, "restantePct12m": 68.3914}, {"periodo": "2020-06", "ano": 2020, "mes": 6, "pib": 591537300000.0, "impostos": 159566033480.62, "impostoPct": 26.9748, "restantePct": 73.0252, "pib12m": 7332351000000.0, "impostos12m": 2284817891966.34, "impostoPct12m": 31.1608, "restantePct12m": 68.8392}, {"periodo": "2020-07", "ano": 2020, "mes": 7, "pib": 629700900000.0, "impostos": 171757444750.75, "impostoPct": 27.276, "restantePct": 72.724, "pib12m": 7335002200000.0, "impostos12m": 2253034833253.5, "impostoPct12m": 30.7162, "restantePct12m": 69.2838}, {"periodo": "2020-08", "ano": 2020, "mes": 8, "pib": 625136300000.0, "impostos": 160975775044.35, "impostoPct": 25.7505, "restantePct": 74.2495, "pib12m": 7343980900000.0, "impostos12m": 2219588094753.47, "impostoPct12m": 30.2232, "restantePct12m": 69.7768}, {"periodo": "2020-09", "ano": 2020, "mes": 9, "pib": 635263900000.0, "impostos": 160089954248.02, "impostoPct": 25.2005, "restantePct": 74.7995, "pib12m": 7365056900000.0, "impostos12m": 2183872149946.74, "impostoPct12m": 29.6518, "restantePct12m": 70.3482}, {"periodo": "2020-10", "ano": 2020, "mes": 10, "pib": 661149000000.0, "impostos": 182608897423.08, "impostoPct": 27.6199, "restantePct": 72.3801, "pib12m": 7384865800000.0, "impostos12m": 2138471592238.6, "impostoPct12m": 28.9575, "restantePct12m": 71.0425}, {"periodo": "2020-11", "ano": 2020, "mes": 11, "pib": 665182800000.0, "impostos": 168155292719.52, "impostoPct": 25.2796, "restantePct": 74.7204, "pib12m": 7415222400000.0, "impostos12m": 2100304401059.64, "impostoPct12m": 28.3242, "restantePct12m": 71.6758}, {"periodo": "2020-12", "ano": 2020, "mes": 12, "pib": 685042600000.0, "impostos": 193889528628.89, "impostoPct": 28.3033, "restantePct": 71.6967, "pib12m": 7453921900000.0, "impostos12m": 2057746503833.19, "impostoPct12m": 27.6062, "restantePct12m": 72.3938}, {"periodo": "2021-01", "ano": 2021, "mes": 1, "pib": 653790400000.0, "impostos": 268752312774.74, "impostoPct": 41.1068, "restantePct": 58.8932, "pib12m": 7489965100000.0, "impostos12m": 2113750702554.39, "impostoPct12m": 28.2211, "restantePct12m": 71.7789}, {"periodo": "2021-02", "ano": 2021, "mes": 2, "pib": 676255000000.0, "impostos": 191235970787.36, "impostoPct": 28.2787, "restantePct": 71.7213, "pib12m": 7556409300000.0, "impostos12m": 2148194976579.81, "impostoPct12m": 28.4288, "restantePct12m": 71.5712}, {"periodo": "2021-03", "ano": 2021, "mes": 3, "pib": 735993600000.0, "impostos": 198429238103.0, "impostoPct": 26.9607, "restantePct": 73.0393, "pib12m": 7676067600000.0, "impostos12m": 2189544836486.43, "impostoPct12m": 28.5243, "restantePct12m": 71.4757}, {"periodo": "2021-04", "ano": 2021, "mes": 4, "pib": 713652100000.0, "impostos": 225218792964.67, "impostoPct": 31.5586, "restantePct": 68.4414, "pib12m": 7834332300000.0, "impostos12m": 2236477262506.2, "impostoPct12m": 28.5471, "restantePct12m": 71.4529}, {"periodo": "2021-05", "ano": 2021, "mes": 5, "pib": 712134200000.0, "impostos": 196810574852.55, "impostoPct": 27.6367, "restantePct": 72.3633, "pib12m": 7984838100000.0, "impostos12m": 2277489815777.56, "impostoPct12m": 28.5227, "restantePct12m": 71.4773}, {"periodo": "2021-06", "ano": 2021, "mes": 6, "pib": 714893300000.0, "impostos": 201570485026.33, "impostoPct": 28.1959, "restantePct": 71.8041, "pib12m": 8108194100000.0, "impostos12m": 2319494267323.26, "impostoPct12m": 28.6068, "restantePct12m": 71.3932}, {"periodo": "2021-07", "ano": 2021, "mes": 7, "pib": 743091800000.0, "impostos": 216971185471.6, "impostoPct": 29.1984, "restantePct": 70.8016, "pib12m": 8221585000000.0, "impostos12m": 2364708008044.11, "impostoPct12m": 28.7622, "restantePct12m": 71.2378}, {"periodo": "2021-08", "ano": 2021, "mes": 8, "pib": 740615100000.0, "impostos": 203351329511.61, "impostoPct": 27.4571, "restantePct": 72.5429, "pib12m": 8337063800000.0, "impostos12m": 2407083562511.37, "impostoPct12m": 28.8721, "restantePct12m": 71.1279}, {"periodo": "2021-09", "ano": 2021, "mes": 9, "pib": 745774400000.0, "impostos": 202232323645.09, "impostoPct": 27.1171, "restantePct": 72.8829, "pib12m": 8447574300000.0, "impostos12m": 2449225931908.43, "impostoPct12m": 28.9932, "restantePct12m": 71.0068}, {"periodo": "2021-10", "ano": 2021, "mes": 10, "pib": 755323000000.0, "impostos": 230679194191.81, "impostoPct": 30.5405, "restantePct": 69.4595, "pib12m": 8541748300000.0, "impostos12m": 2497296228677.16, "impostoPct12m": 29.2364, "restantePct12m": 70.7636}, {"periodo": "2021-11", "ano": 2021, "mes": 11, "pib": 771558900000.0, "impostos": 212420796418.02, "impostoPct": 27.5314, "restantePct": 72.4686, "pib12m": 8648124400000.0, "impostos12m": 2541561732375.66, "impostoPct12m": 29.3886, "restantePct12m": 70.6114}, {"periodo": "2021-12", "ano": 2021, "mes": 12, "pib": 782833500000.0, "impostos": 244929359179.67, "impostoPct": 31.2875, "restantePct": 68.7125, "pib12m": 8745915300000.0, "impostos12m": 2592601562926.44, "impostoPct12m": 29.6436, "restantePct12m": 70.3564}, {"periodo": "2022-01", "ano": 2022, "mes": 1, "pib": 722909900000.0, "impostos": 299743795919.6, "impostoPct": 41.4635, "restantePct": 58.5365, "pib12m": 8815034800000.0, "impostos12m": 2623593046071.3, "impostoPct12m": 29.7627, "restantePct12m": 70.2373}, {"periodo": "2022-02", "ano": 2022, "mes": 2, "pib": 754147400000.0, "impostos": 213318149844.44, "impostoPct": 28.286, "restantePct": 71.714, "pib12m": 8892927200000.0, "impostos12m": 2645675225128.38, "impostoPct12m": 29.7503, "restantePct12m": 70.2497}, {"periodo": "2022-03", "ano": 2022, "mes": 3, "pib": 838868000000.0, "impostos": 221122472399.72, "impostoPct": 26.3596, "restantePct": 73.6404, "pib12m": 8995801600000.0, "impostos12m": 2668368459425.1, "impostoPct12m": 29.6624, "restantePct12m": 70.3376}, {"periodo": "2022-04", "ano": 2022, "mes": 4, "pib": 819727600000.0, "impostos": 251183566686.72, "impostoPct": 30.6423, "restantePct": 69.3577, "pib12m": 9101877100000.0, "impostos12m": 2694333233147.15, "impostoPct12m": 29.602, "restantePct12m": 70.398}, {"periodo": "2022-05", "ano": 2022, "mes": 5, "pib": 826052100000.0, "impostos": 219388178498.54, "impostoPct": 26.5586, "restantePct": 73.4414, "pib12m": 9215795000000.0, "impostos12m": 2716910836793.14, "impostoPct12m": 29.481, "restantePct12m": 70.519}, {"periodo": "2022-06", "ano": 2022, "mes": 6, "pib": 826025700000.0, "impostos": 224591060202.06, "impostoPct": 27.1894, "restantePct": 72.8106, "pib12m": 9326927400000.0, "impostos12m": 2739931411968.87, "impostoPct12m": 29.3766, "restantePct12m": 70.6234}, {"periodo": "2022-07", "ano": 2022, "mes": 7, "pib": 852909900000.0, "impostos": 241933999213.8, "impostoPct": 28.3657, "restantePct": 71.6343, "pib12m": 9436745500000.0, "impostos12m": 2764894225711.08, "impostoPct12m": 29.2992, "restantePct12m": 70.7008}, {"periodo": "2022-08", "ano": 2022, "mes": 8, "pib": 854004100000.0, "impostos": 226614403086.77, "impostoPct": 26.5355, "restantePct": 73.4645, "pib12m": 9550134500000.0, "impostos12m": 2788157299286.24, "impostoPct12m": 29.195, "restantePct12m": 70.805}, {"periodo": "2022-09", "ano": 2022, "mes": 9, "pib": 836785800000.0, "impostos": 225458207152.65, "impostoPct": 26.9434, "restantePct": 73.0566, "pib12m": 9641145900000.0, "impostos12m": 2811383182793.8, "impostoPct12m": 29.1603, "restantePct12m": 70.8397}, {"periodo": "2022-10", "ano": 2022, "mes": 10, "pib": 877947500000.0, "impostos": 257253595340.84, "impostoPct": 29.3017, "restantePct": 70.6983, "pib12m": 9763770400000.0, "impostos12m": 2837957583942.83, "impostoPct12m": 29.0662, "restantePct12m": 70.9338}, {"periodo": "2022-11", "ano": 2022, "mes": 11, "pib": 879514900000.0, "impostos": 236731117510.26, "impostoPct": 26.9161, "restantePct": 73.0839, "pib12m": 9871726400000.0, "impostos12m": 2862267905035.07, "impostoPct12m": 28.9946, "restantePct12m": 71.0054}, {"periodo": "2022-12", "ano": 2022, "mes": 12, "pib": 883886200000.0, "impostos": 273151289434.94, "impostoPct": 30.9034, "restantePct": 69.0966, "pib12m": 9972779100000.0, "impostos12m": 2890489835290.34, "impostoPct12m": 28.9838, "restantePct12m": 71.0162}, {"periodo": "2023-01", "ano": 2023, "mes": 1, "pib": 812834600000.0, "impostos": 317231916383.18, "impostoPct": 39.0279, "restantePct": 60.9721, "pib12m": 10062703800000.0, "impostos12m": 2907977955753.92, "impostoPct12m": 28.8986, "restantePct12m": 71.1014}, {"periodo": "2023-02", "ano": 2023, "mes": 2, "pib": 831224500000.0, "impostos": 225763890347.91, "impostoPct": 27.1604, "restantePct": 72.8396, "pib12m": 10139780900000.0, "impostos12m": 2920423696257.39, "impostoPct12m": 28.8016, "restantePct12m": 71.1984}, {"periodo": "2023-03", "ano": 2023, "mes": 3, "pib": 938679800000.0, "impostos": 234023544872.83, "impostoPct": 24.9311, "restantePct": 75.0689, "pib12m": 10239592700000.0, "impostos12m": 2933324768730.51, "impostoPct12m": 28.6469, "restantePct12m": 71.3531}, {"periodo": "2023-04", "ano": 2023, "mes": 4, "pib": 904664800000.0, "impostos": 264090796764.16, "impostoPct": 29.1921, "restantePct": 70.8079, "pib12m": 10324529900000.0, "impostos12m": 2946231998807.95, "impostoPct12m": 28.5362, "restantePct12m": 71.4638}, {"periodo": "2023-05", "ano": 2023, "mes": 5, "pib": 903238100000.0, "impostos": 233935779775.7, "impostoPct": 25.8997, "restantePct": 74.1003, "pib12m": 10401715900000.0, "impostos12m": 2960779600085.1, "impostoPct12m": 28.4643, "restantePct12m": 71.5357}, {"periodo": "2023-06", "ano": 2023, "mes": 6, "pib": 893074900000.0, "impostos": 237694502439.48, "impostoPct": 26.6153, "restantePct": 73.3847, "pib12m": 10468765100000.0, "impostos12m": 2973883042322.53, "impostoPct12m": 28.4072, "restantePct12m": 71.5928}, {"periodo": "2023-07", "ano": 2023, "mes": 7, "pib": 911553500000.0, "impostos": 256049290272.64, "impostoPct": 28.0893, "restantePct": 71.9107, "pib12m": 10527408700000.0, "impostos12m": 2987998333381.37, "impostoPct12m": 28.383, "restantePct12m": 71.617}, {"periodo": "2023-08", "ano": 2023, "mes": 8, "pib": 923374400000.0, "impostos": 239835894353.35, "impostoPct": 25.9739, "restantePct": 74.0261, "pib12m": 10596779000000.0, "impostos12m": 3001219824647.95, "impostoPct12m": 28.322, "restantePct12m": 71.678}, {"periodo": "2023-09", "ano": 2023, "mes": 9, "pib": 905912700000.0, "impostos": 238612241831.13, "impostoPct": 26.3394, "restantePct": 73.6606, "pib12m": 10665905900000.0, "impostos12m": 3014373859326.43, "impostoPct12m": 28.2618, "restantePct12m": 71.7382}, {"periodo": "2023-10", "ano": 2023, "mes": 10, "pib": 943578500000.0, "impostos": 272262686191.93, "impostoPct": 28.8543, "restantePct": 71.1457, "pib12m": 10731536900000.0, "impostos12m": 3029382950177.52, "impostoPct12m": 28.2288, "restantePct12m": 71.7712}, {"periodo": "2023-11", "ano": 2023, "mes": 11, "pib": 950303500000.0, "impostos": 250542853922.7, "impostoPct": 26.3645, "restantePct": 73.6355, "pib12m": 10802325500000.0, "impostos12m": 3043194686589.97, "impostoPct12m": 28.1717, "restantePct12m": 71.8283}, {"periodo": "2023-12", "ano": 2023, "mes": 12, "pib": 949176500000.0, "impostos": 289087908372.35, "impostoPct": 30.4567, "restantePct": 69.5433, "pib12m": 10867615800000.0, "impostos12m": 3059131305527.38, "impostoPct12m": 28.1491, "restantePct12m": 71.8509}, {"periodo": "2024-01", "ano": 2024, "mes": 1, "pib": 889287900000.0, "impostos": 375674214354.64, "impostoPct": 42.2444, "restantePct": 57.7556, "pib12m": 10944069100000.0, "impostos12m": 3117573603498.83, "impostoPct12m": 28.4864, "restantePct12m": 71.5136}, {"periodo": "2024-02", "ano": 2024, "mes": 2, "pib": 899561200000.0, "impostos": 276903827511.29, "impostoPct": 30.7821, "restantePct": 69.2179, "pib12m": 11012405800000.0, "impostos12m": 3168713540662.21, "impostoPct12m": 28.774, "restantePct12m": 71.226}, {"periodo": "2024-03", "ano": 2024, "mes": 3, "pib": 965492700000.0, "impostos": 282601391763.48, "impostoPct": 29.2702, "restantePct": 70.7298, "pib12m": 11039218700000.0, "impostos12m": 3217291387552.86, "impostoPct12m": 29.1442, "restantePct12m": 70.8558}, {"periodo": "2024-04", "ano": 2024, "mes": 4, "pib": 992884000000.0, "impostos": 309348141751.94, "impostoPct": 31.1565, "restantePct": 68.8435, "pib12m": 11127437900000.0, "impostos12m": 3262548732540.64, "impostoPct12m": 29.3199, "restantePct12m": 70.6801}, {"periodo": "2024-05", "ano": 2024, "mes": 5, "pib": 966039500000.0, "impostos": 274963094209.42, "impostoPct": 28.4629, "restantePct": 71.5371, "pib12m": 11190239300000.0, "impostos12m": 3303576046974.36, "impostoPct12m": 29.5219, "restantePct12m": 70.4781}, {"periodo": "2024-06", "ano": 2024, "mes": 6, "pib": 975835300000.0, "impostos": 281483958103.71, "impostoPct": 28.8454, "restantePct": 71.1546, "pib12m": 11272999700000.0, "impostos12m": 3347365502638.59, "impostoPct12m": 29.6937, "restantePct12m": 70.3063}, {"periodo": "2024-07", "ano": 2024, "mes": 7, "pib": 1018525700000.0, "impostos": 303220171084.7, "impostoPct": 29.7705, "restantePct": 70.2295, "pib12m": 11379971900000.0, "impostos12m": 3394536383450.65, "impostoPct12m": 29.829, "restantePct12m": 70.171}, {"periodo": "2024-08", "ano": 2024, "mes": 8, "pib": 1003898100000.0, "impostos": 284019849618.16, "impostoPct": 28.2917, "restantePct": 71.7083, "pib12m": 11460495600000.0, "impostos12m": 3438720338715.46, "impostoPct12m": 30.005, "restantePct12m": 69.995}, {"periodo": "2024-09", "ano": 2024, "mes": 9, "pib": 993512200000.0, "impostos": 282570768752.76, "impostoPct": 28.4416, "restantePct": 71.5584, "pib12m": 11548095100000.0, "impostos12m": 3482678865637.09, "impostoPct12m": 30.158, "restantePct12m": 69.842}, {"periodo": "2024-10", "ano": 2024, "mes": 10, "pib": 1045433400000.0, "impostos": 325183196091.69, "impostoPct": 31.1051, "restantePct": 68.8949, "pib12m": 11649950000000.0, "impostos12m": 3535599375536.85, "impostoPct12m": 30.3486, "restantePct12m": 69.6514}, {"periodo": "2024-11", "ano": 2024, "mes": 11, "pib": 1019291400000.0, "impostos": 293936603649.96, "impostoPct": 28.8373, "restantePct": 71.1627, "pib12m": 11718937900000.0, "impostos12m": 3578993125264.11, "impostoPct12m": 30.5403, "restantePct12m": 69.4597}, {"periodo": "2024-12", "ano": 2024, "mes": 12, "pib": 998998400000.0, "impostos": 342345354450.46, "impostoPct": 34.2689, "restantePct": 65.7311, "pib12m": 11768759800000.0, "impostos12m": 3632250571342.22, "impostoPct12m": 30.8635, "restantePct12m": 69.1365}, {"periodo": "2025-01", "ano": 2025, "mes": 1, "pib": 958405100000.0, "impostos": 413276162397.1, "impostoPct": 43.1212, "restantePct": 56.8788, "pib12m": 11837877000000.0, "impostos12m": 3669852519384.68, "impostoPct12m": 31.0009, "restantePct12m": 68.9991}, {"periodo": "2025-02", "ano": 2025, "mes": 2, "pib": 994393600000.0, "impostos": 294115533123.5, "impostoPct": 29.5774, "restantePct": 70.4226, "pib12m": 11932709400000.0, "impostos12m": 3687064224996.89, "impostoPct12m": 30.8988, "restantePct12m": 69.1012}, {"periodo": "2025-03", "ano": 2025, "mes": 3, "pib": 1071924300000.0, "impostos": 304875857506.07, "impostoPct": 28.4419, "restantePct": 71.5581, "pib12m": 12039141000000.0, "impostos12m": 3709338690739.48, "impostoPct12m": 30.8107, "restantePct12m": 69.1893}, {"periodo": "2025-04", "ano": 2025, "mes": 4, "pib": 1087044200000.0, "impostos": 346323032905.59, "impostoPct": 31.8591, "restantePct": 68.1409, "pib12m": 12133301200000.0, "impostos12m": 3746313581893.13, "impostoPct12m": 30.8763, "restantePct12m": 69.1237}, {"periodo": "2025-05", "ano": 2025, "mes": 5, "pib": 1062393500000.0, "impostos": 302484674309.93, "impostoPct": 28.472, "restantePct": 71.528, "pib12m": 12229655200000.0, "impostos12m": 3773835161993.64, "impostoPct12m": 30.8581, "restantePct12m": 69.1419}, {"periodo": "2025-06", "ano": 2025, "mes": 6, "pib": 1050907300000.0, "impostos": 309658223898.33, "impostoPct": 29.4658, "restantePct": 70.5342, "pib12m": 12304727200000.0, "impostos12m": 3802009427788.26, "impostoPct12m": 30.8988, "restantePct12m": 69.1012}, {"periodo": "2025-07", "ano": 2025, "mes": 7, "pib": 1094833300000.0, "impostos": 333570055859.58, "impostoPct": 30.4677, "restantePct": 69.5323, "pib12m": 12381034800000.0, "impostos12m": 3832359312563.13, "impostoPct12m": 30.9535, "restantePct12m": 69.0465}, {"periodo": "2025-08", "ano": 2025, "mes": 8, "pib": 1065879700000.0, "impostos": 312447937627.15, "impostoPct": 29.3136, "restantePct": 70.6864, "pib12m": 12443016400000.0, "impostos12m": 3860787400572.12, "impostoPct12m": 31.0277, "restantePct12m": 68.9723}, {"periodo": "2025-09", "ano": 2025, "mes": 9, "pib": 1074994600000.0, "impostos": 310853815496.37, "impostoPct": 28.9168, "restantePct": 71.0832, "pib12m": 12524498800000.0, "impostos12m": 3889070447315.72, "impostoPct12m": 31.0517, "restantePct12m": 68.9483}, {"periodo": "2025-10", "ano": 2025, "mes": 10, "pib": 1109994400000.0, "impostos": 354692174092.04, "impostoPct": 31.9544, "restantePct": 68.0456, "pib12m": 12589059800000.0, "impostos12m": 3918579425316.07, "impostoPct12m": 31.1269, "restantePct12m": 68.8731}, {"periodo": "2025-11", "ano": 2025, "mes": 11, "pib": 1085463400000.0, "impostos": 326396506271.19, "impostoPct": 30.0698, "restantePct": 69.9302, "pib12m": 12655231800000.0, "impostos12m": 3951039327937.3, "impostoPct12m": 31.2206, "restantePct12m": 68.7794}, {"periodo": "2025-12", "ano": 2025, "mes": 12, "pib": 1082332300000.0, "impostos": 376611353389.84, "impostoPct": 34.7963, "restantePct": 65.2037, "pib12m": 12738565700000.0, "impostos12m": 3985305326876.68, "impostoPct12m": 31.2854, "restantePct12m": 68.7146}];
+    const serie12m = dados.filter(d => d.pib12m !== null && d.impostos12m !== null && d.impostoPct12m !== null);
+    const periodoMin = serie12m[0].periodo;
+    const periodoMax = serie12m[serie12m.length - 1].periodo;
+
+    const brl = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      maximumFractionDigits: 0
+    });
+    const pct = new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    });
+
+    const filtroInicio = document.getElementById("filtroInicio");
+    const filtroFim = document.getElementById("filtroFim");
+    filtroInicio.min = periodoMin;
+    filtroInicio.max = periodoMax;
+    filtroInicio.value = periodoMin;
+    filtroFim.min = periodoMin;
+    filtroFim.max = periodoMax;
+    filtroFim.value = periodoMax;
+
+    function trilhoes(valor) {
+      return "R$ " + pct.format(valor / 1e12) + " tri";
+    }
+
+    function moedaCurta(valor) {
+      const abs = Math.abs(valor);
+      if (abs >= 1e12) return "R$ " + pct.format(valor / 1e12) + " tri";
+      if (abs >= 1e9) return "R$ " + pct.format(valor / 1e9) + " bi";
+      if (abs >= 1e6) return "R$ " + pct.format(valor / 1e6) + " mi";
+      return brl.format(valor);
+    }
+
+    function serieFiltrada() {
+      const inicio = filtroInicio.value || periodoMin;
+      const fim = filtroFim.value || periodoMax;
+      const ini = inicio <= fim ? inicio : fim;
+      const end = inicio <= fim ? fim : inicio;
+      return serie12m.filter(d => d.periodo >= ini && d.periodo <= end);
+    }
+
+    function serieAnual(base) {
+      const porAno = new Map();
+      base.forEach(d => porAno.set(d.ano, d));
+      return Array.from(porAno.values()).sort((a, b) => a.ano - b.ano);
+    }
+
+    function atualizarMetricas(base) {
+      const serie = base.length ? base : serie12m;
+      const ultimo = serie[serie.length - 1];
+      const media = serie.reduce((acc, d) => acc + d.impostoPct12m, 0) / serie.length;
+      document.getElementById("periodoSelecionado").textContent = `${serie[0].periodo} a ${ultimo.periodo}`;
+      document.getElementById("mediaPct").textContent = pct.format(media) + "%";
+      document.getElementById("ultimoPib").textContent = trilhoes(ultimo.pib12m);
+      document.getElementById("ultimoImposto").textContent = trilhoes(ultimo.impostos12m);
+    }
+
+    function prepararSvg(id) {
+      const svg = document.getElementById(id);
+      svg.innerHTML = "";
+      const rect = svg.getBoundingClientRect();
+      const width = Math.max(320, rect.width);
+      const height = Math.max(320, rect.height || 420);
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      return { svg, width, height };
+    }
+
+    function pathLinha(pontos) {
+      return pontos.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+    }
+
+    function addText(svg, x, y, text, cls = "axis") {
+      const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      t.setAttribute("x", x);
+      t.setAttribute("y", y);
+      t.setAttribute("class", cls);
+      t.textContent = text;
+      svg.appendChild(t);
+      return t;
+    }
+
+    function tooltipHtml(d) {
+      return `<strong>${d.periodo}</strong><br>` +
+        `PIB: ${brl.format(d.pib)}<br>` +
+        `Impostos: ${brl.format(d.impostos)}<br>` +
+        `Imposto / PIB: ${pct.format(d.impostoPct)}%`;
+    }
+
+    function tooltipHtml12m(d) {
+      return `<strong>${d.periodo}</strong><br>` +
+        `PIB 12m: ${brl.format(d.pib12m)}<br>` +
+        `Impostos 12m: ${brl.format(d.impostos12m)}<br>` +
+        `Imposto / PIB 12m: ${pct.format(d.impostoPct12m)}%`;
+    }
+
+    function bindTooltip(el, d) {
+      const tooltip = document.getElementById("tooltip");
+      el.addEventListener("mousemove", (ev) => {
+        tooltip.style.display = "block";
+        tooltip.style.left = Math.min(ev.clientX + 14, window.innerWidth - 240) + "px";
+        tooltip.style.top = Math.min(ev.clientY + 14, window.innerHeight - 130) + "px";
+        tooltip.innerHTML = tooltipHtml(d);
+      });
+      el.addEventListener("mouseleave", () => {
+        tooltip.style.display = "none";
+      });
+    }
+
+    function bindTooltip12m(el, d) {
+      const tooltip = document.getElementById("tooltip");
+      el.addEventListener("mousemove", (ev) => {
+        tooltip.style.display = "block";
+        tooltip.style.left = Math.min(ev.clientX + 14, window.innerWidth - 240) + "px";
+        tooltip.style.top = Math.min(ev.clientY + 14, window.innerHeight - 130) + "px";
+        tooltip.innerHTML = tooltipHtml12m(d);
+      });
+      el.addEventListener("mouseleave", () => {
+        tooltip.style.display = "none";
+      });
+    }
+
+    function desenharValores() {
+      const serieBase = serieFiltrada();
+      const { svg, width, height } = prepararSvg("chartValores");
+      if (serieBase.length < 2) return;
+      const margin = { top: 18, right: 18, bottom: 42, left: 78 };
+      const innerW = width - margin.left - margin.right;
+      const innerH = height - margin.top - margin.bottom;
+      const maxY = Math.max(...serieBase.map(d => Math.max(d.pib12m, d.impostos12m))) * 1.08;
+      const x = i => margin.left + (i / (serieBase.length - 1)) * innerW;
+      const y = v => margin.top + innerH - (v / maxY) * innerH;
+
+      for (let i = 0; i <= 5; i++) {
+        const val = maxY * i / 5;
+        const yy = y(val);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", margin.left);
+        line.setAttribute("x2", margin.left + innerW);
+        line.setAttribute("y1", yy);
+        line.setAttribute("y2", yy);
+        line.setAttribute("class", "grid");
+        svg.appendChild(line);
+        const label = addText(svg, 8, yy + 4, moedaCurta(val));
+        label.setAttribute("class", "axis");
+      }
+
+      for (let ano = 2004; ano <= 2025; ano += 2) {
+        const idx = serieBase.findIndex(d => d.ano === ano && d.mes === 1);
+        if (idx >= 0) {
+          const xx = x(idx);
+          const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          tick.setAttribute("x1", xx);
+          tick.setAttribute("x2", xx);
+          tick.setAttribute("y1", margin.top + innerH);
+          tick.setAttribute("y2", margin.top + innerH + 5);
+          tick.setAttribute("class", "axis");
+          svg.appendChild(tick);
+          const label = addText(svg, xx - 12, height - 14, String(ano));
+          label.setAttribute("class", "axis");
+        }
+      }
+
+      const seriePib = serieBase.map((d, i) => ({ x: x(i), y: y(d.pib12m) }));
+      const serieImp = serieBase.map((d, i) => ({ x: x(i), y: y(d.impostos12m) }));
+      for (const [serie, cor] of [[seriePib, "var(--pib)"], [serieImp, "var(--tax)"]]) {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", pathLinha(serie));
+        path.setAttribute("class", "line");
+        path.setAttribute("stroke", cor);
+        svg.appendChild(path);
+      }
+
+      serieBase.forEach((d, i) => {
+        const hit = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        hit.setAttribute("x", x(i) - Math.max(2, innerW / serieBase.length / 2));
+        hit.setAttribute("y", margin.top);
+        hit.setAttribute("width", Math.max(4, innerW / serieBase.length));
+        hit.setAttribute("height", innerH);
+        hit.setAttribute("fill", "transparent");
+        bindTooltip12m(hit, d);
+        svg.appendChild(hit);
+      });
+    }
+
+    function desenharPercentual() {
+      const serieBase = serieAnual(serieFiltrada());
+      const { svg, width, height } = prepararSvg("chartPercentual");
+      if (serieBase.length < 1) return;
+      const margin = { top: 18, right: 18, bottom: 42, left: 56 };
+      const innerW = width - margin.left - margin.right;
+      const innerH = height - margin.top - margin.bottom;
+      const x = i => margin.left + (i / serieBase.length) * innerW;
+      const barW = Math.max(10, innerW / serieBase.length - 6);
+      const yPct = v => margin.top + innerH - (v / 100) * innerH;
+
+      [0, 25, 50, 75, 100].forEach(v => {
+        const yy = yPct(v);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", margin.left);
+        line.setAttribute("x2", margin.left + innerW);
+        line.setAttribute("y1", yy);
+        line.setAttribute("y2", yy);
+        line.setAttribute("class", "grid");
+        svg.appendChild(line);
+        const label = addText(svg, 14, yy + 4, `${v}%`);
+        label.setAttribute("class", "axis");
+      });
+
+      serieBase.forEach((d, i) => {
+        const xx = x(i);
+        const impostoH = innerH * d.impostoPct12m / 100;
+        const restH = innerH - impostoH;
+
+        const rest = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rest.setAttribute("x", xx);
+        rest.setAttribute("y", margin.top);
+        rest.setAttribute("width", barW);
+        rest.setAttribute("height", restH);
+        rest.setAttribute("fill", "var(--rest)");
+        svg.appendChild(rest);
+
+        const tax = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        tax.setAttribute("x", xx);
+        tax.setAttribute("y", margin.top + restH);
+        tax.setAttribute("width", barW);
+        tax.setAttribute("height", impostoH);
+        tax.setAttribute("fill", "var(--tax)");
+        bindTooltip12m(tax, d);
+        svg.appendChild(tax);
+      });
+
+      serieBase.forEach((d, i) => {
+        const label = addText(svg, x(i) + Math.max(0, barW / 2 - 14), height - 14, String(d.ano));
+        label.setAttribute("class", "axis");
+      });
+    }
+
+    function desenharPercentualLinha() {
+      const serieBase = serieFiltrada();
+      const { svg, width, height } = prepararSvg("chartPercentualLinha");
+      if (serieBase.length < 2) return;
+      const margin = { top: 18, right: 18, bottom: 42, left: 56 };
+      const innerW = width - margin.left - margin.right;
+      const innerH = height - margin.top - margin.bottom;
+      const maxPct = Math.ceil(Math.max(...serieBase.map(d => d.impostoPct12m)) / 5) * 5;
+      const x = i => margin.left + (i / (serieBase.length - 1)) * innerW;
+      const y = v => margin.top + innerH - (v / maxPct) * innerH;
+
+      const quedaInicio = serieBase.findIndex(d => d.periodo >= "2020-01");
+      const quedaFim = serieBase.findIndex(d => d.periodo >= "2021-12");
+      if (quedaInicio >= 0 && quedaFim >= 0 && quedaFim > quedaInicio) {
+        const sombra = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        sombra.setAttribute("x", x(quedaInicio));
+        sombra.setAttribute("y", margin.top);
+        sombra.setAttribute("width", Math.max(1, x(quedaFim) - x(quedaInicio)));
+        sombra.setAttribute("height", innerH);
+        sombra.setAttribute("fill", "rgba(216, 163, 26, 0.14)");
+        sombra.setAttribute("stroke", "rgba(216, 163, 26, 0.28)");
+        svg.appendChild(sombra);
+      }
+
+      for (let i = 0; i <= 5; i++) {
+        const val = maxPct * i / 5;
+        const yy = y(val);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", margin.left);
+        line.setAttribute("x2", margin.left + innerW);
+        line.setAttribute("y1", yy);
+        line.setAttribute("y2", yy);
+        line.setAttribute("class", "grid");
+        svg.appendChild(line);
+        const label = addText(svg, 14, yy + 4, `${pct.format(val)}%`);
+        label.setAttribute("class", "axis");
+      }
+
+      for (let ano = 2004; ano <= 2025; ano += 2) {
+        const idx = serieBase.findIndex(d => d.ano === ano && d.mes === 1);
+        if (idx >= 0) {
+          const xx = x(idx);
+          const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          tick.setAttribute("x1", xx);
+          tick.setAttribute("x2", xx);
+          tick.setAttribute("y1", margin.top + innerH);
+          tick.setAttribute("y2", margin.top + innerH + 5);
+          tick.setAttribute("class", "axis");
+          svg.appendChild(tick);
+          const label = addText(svg, xx - 12, height - 14, String(ano));
+          label.setAttribute("class", "axis");
+        }
+      }
+
+      const serie = serieBase.map((d, i) => ({ x: x(i), y: y(d.impostoPct12m) }));
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", pathLinha(serie));
+      path.setAttribute("class", "line");
+      path.setAttribute("stroke", "var(--tax)");
+      svg.appendChild(path);
+
+      serieBase.forEach((d, i) => {
+        const hit = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        hit.setAttribute("x", x(i) - Math.max(2, innerW / serieBase.length / 2));
+        hit.setAttribute("y", margin.top);
+        hit.setAttribute("width", Math.max(4, innerW / serieBase.length));
+        hit.setAttribute("height", innerH);
+        hit.setAttribute("fill", "transparent");
+        bindTooltip12m(hit, d);
+        svg.appendChild(hit);
+      });
+    }
+
+    function desenhar() {
+      const base = serieFiltrada();
+      atualizarMetricas(base);
+      desenharValores();
+      desenharPercentualLinha();
+      desenharPercentual();
+    }
+
+    window.addEventListener("resize", desenhar);
+    filtroInicio.addEventListener("change", desenhar);
+    filtroFim.addEventListener("change", desenhar);
+    desenhar();
+  </script>
+</body>
+</html>
