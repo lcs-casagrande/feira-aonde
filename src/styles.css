@@ -40,6 +40,85 @@ a {
   min-height: 100vh;
 }
 
+.boot-screen {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px;
+  background:
+    linear-gradient(rgba(47, 163, 93, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(47, 163, 93, 0.08) 1px, transparent 1px),
+    #f4f6f2;
+  background-size: 28px 28px;
+}
+
+.boot-card {
+  width: min(100%, 360px);
+  padding: 24px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #dfe6dd;
+  border-radius: 8px;
+  box-shadow: 0 16px 38px rgba(28, 52, 40, 0.12);
+}
+
+.boot-logo {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  background: #e8f5e9;
+  border: 1px solid #b7ddbb;
+  border-radius: 8px;
+  font-size: 1.8rem;
+}
+
+.boot-card h1 {
+  margin: 0 0 8px;
+  color: #21834c;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.boot-card p {
+  margin: 0;
+  color: #52625a;
+  font-weight: 750;
+}
+
+.boot-card small {
+  display: block;
+  color: #718077;
+}
+
+.boot-progress {
+  position: relative;
+  height: 8px;
+  margin: 18px 0 14px;
+  overflow: hidden;
+  background: #e8f0e7;
+  border-radius: 999px;
+}
+
+.boot-progress span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -40%;
+  width: 42%;
+  background: #2fa35d;
+  border-radius: 999px;
+  animation: boot-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes boot-slide {
+  to {
+    left: 100%;
+  }
+}
+
 .map-screen {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);

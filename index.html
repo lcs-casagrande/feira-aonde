@@ -11,12 +11,35 @@
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <section class="boot-screen" aria-live="polite">
+        <div class="boot-card">
+          <div class="boot-logo">🥬📍</div>
+          <h1>Feira Perto</h1>
+          <p id="boot-status">Carregando o mapa das feiras...</p>
+          <div class="boot-progress" aria-hidden="true">
+            <span></span>
+          </div>
+          <small>Se esta mensagem ficar na tela, toque em atualizar ou abra novamente o link.</small>
+        </div>
+      </section>
+    </div>
     <script>
       window.__feiraErrors = [];
       window.addEventListener("error", function (event) {
         window.__feiraErrors.push(event.message || "Erro ao carregar script");
+        var status = document.getElementById("boot-status");
+        if (status) {
+          status.textContent = "Algo travou ao carregar. Tente atualizar a página.";
+        }
       });
+      window.setTimeout(function () {
+        var root = document.getElementById("root");
+        var status = document.getElementById("boot-status");
+        if (root && status && root.querySelector(".boot-screen")) {
+          status.textContent = "Ainda carregando. Se continuar assim, atualize a página.";
+        }
+      }, 6000);
     </script>
     <script
       src="./vendor/leaflet.js"
