@@ -4,20 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cadastro de Feira de Rua</title>
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@18.3.1",
-          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-          "lucide-react": "https://esm.sh/lucide-react@0.468.0"
-        }
-      }
-    </script>
+    <link
+      rel="stylesheet"
+      href="./vendor/leaflet.css"
+    />
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
-    <script type="text/babel" data-type="module" src="./src/main.jsx"></script>
+    <script>
+      window.__feiraErrors = [];
+      window.addEventListener("error", function (event) {
+        window.__feiraErrors.push(event.message || "Erro ao carregar script");
+      });
+    </script>
+    <script
+      src="./vendor/leaflet.js"
+    ></script>
+    <script src="./vendor/react.production.min.js"></script>
+    <script src="./vendor/react-dom.production.min.js"></script>
+    <script src="./src/main.compiled.js"></script>
   </body>
 </html>
