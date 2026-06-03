@@ -24,12 +24,6 @@ const cityViews = {
     zoom: 12
   }
 };
-const productTags = {
-  Orgânica: ["Orgânicos", "Verduras", "Frutas"],
-  Noturna: ["Comida pronta", "Pastel", "Caldo de cana"],
-  Tradicional: ["Frutas", "Verduras", "Pastel"],
-  "Feira livre tradicional": ["Frutas", "Verduras", "Pastel"]
-};
 function Icon({
   type,
   size = 18,
@@ -68,6 +62,15 @@ function App() {
   const [fairs, setFairs] = useState([]);
   const [selectedFair, setSelectedFair] = useState(null);
   const [dataError, setDataError] = useState("");
+  const [confirmedIds, setConfirmedIds] = useState(() => readConfirmedIds());
+  function confirmFair(fairId) {
+    const next = {
+      ...confirmedIds,
+      [fairId]: true
+    };
+    setConfirmedIds(next);
+    window.localStorage.setItem("feira-confirmadas-dev", JSON.stringify(next));
+  }
   useEffect(() => {
     fetch("./data/feiras.json").then(response => response.json()).then(data => {
       setFairs(data);
@@ -86,7 +89,9 @@ function App() {
     fairs: fairs,
     selectedFair: selectedFair,
     onSelectFair: setSelectedFair,
-    onChangePage: setPage
+    onChangePage: setPage,
+    confirmedIds: confirmedIds,
+    onConfirmFair: confirmFair
   }) : /*#__PURE__*/React.createElement(ContributionPage, {
     page: page,
     onChangePage: setPage
@@ -96,7 +101,9 @@ function MapExperience({
   fairs,
   selectedFair,
   onSelectFair,
-  onChangePage
+  onChangePage,
+  confirmedIds,
+  onConfirmFair
 }) {
   const [city, setCity] = useState("Guarulhos");
   const [day, setDay] = useState(todayName());
@@ -105,16 +112,18 @@ function MapExperience({
   const filteredFairs = useMemo(() => {
     const normalizedQuery = normalizeText(query);
     return fairs.filter(fair => fair.municipio === city).filter(fair => {
-      if (quickFilter === "open-now" || quickFilter === "today") return fair.dia_semana === day;
+      if (quickFilter === "today") return fair.dia_semana === day;
       if (quickFilter === "organic") return normalizeText(fair.categoria).includes("organica");
-      if (quickFilter === "pastel") return true;
-      if (quickFilter === "best") return true;
+      if (quickFilter === "night") return normalizeText(fair.categoria).includes("noturna");
+      if (quickFilter === "traditional") return normalizeText(fair.categoria).includes("tradicional");
+      if (quickFilter === "confirmed") return Boolean(confirmedIds[fair.id]);
+      if (quickFilter === "internet-source") return !confirmedIds[fair.id] && fair.status_validacao === "fonte_internet";
       return fair.dia_semana === day;
     }).filter(fair => {
       if (!normalizedQuery) return true;
       return [fair.nome_feira, fair.bairro, fair.endereco, fair.categoria, fair.dia_semana].map(normalizeText).some(value => value.includes(normalizedQuery));
-    }).slice(0, 38).map(makeDisplayFair);
-  }, [city, day, fairs, query, quickFilter]);
+    }).slice(0, 38).map(fair => makeDisplayFair(fair, confirmedIds));
+  }, [city, day, fairs, query, quickFilter, confirmedIds]);
   useEffect(() => {
     if (!filteredFairs.length) return;
     onSelectFair(current => current || filteredFairs[0]);
@@ -169,10 +178,10 @@ function MapExperience({
   }, /*#__PURE__*/React.createElement("button", {
     className: "primary-action",
     type: "button",
-    onClick: () => setQuickFilter("open-now")
+    onClick: () => setQuickFilter("today")
   }, /*#__PURE__*/React.createElement(Icon, {
     type: "calendar"
-  }), "Ver feiras abertas hoje"), /*#__PURE__*/React.createElement(SegmentedSelect, {
+  }), "Ver feiras de hoje"), /*#__PURE__*/React.createElement(SegmentedSelect, {
     label: "Cidade",
     value: city,
     onChange: setCity,
@@ -183,10 +192,6 @@ function MapExperience({
     onChange: setDay,
     options: weekDays
   }), /*#__PURE__*/React.createElement(FilterChip, {
-    active: quickFilter === "open-now",
-    onClick: () => setQuickFilter("open-now"),
-    label: "Abertas agora"
-  }), /*#__PURE__*/React.createElement(FilterChip, {
     active: quickFilter === "today",
     onClick: () => setQuickFilter("today"),
     label: "Hoje"
@@ -195,13 +200,21 @@ function MapExperience({
     onClick: () => setQuickFilter("organic"),
     label: "Org\xE2nicas"
   }), /*#__PURE__*/React.createElement(FilterChip, {
-    active: quickFilter === "pastel",
-    onClick: () => setQuickFilter("pastel"),
-    label: "Tem pastel"
+    active: quickFilter === "night",
+    onClick: () => setQuickFilter("night"),
+    label: "Noturnas"
   }), /*#__PURE__*/React.createElement(FilterChip, {
-    active: quickFilter === "best",
-    onClick: () => setQuickFilter("best"),
-    label: "Melhor avaliadas"
+    active: quickFilter === "traditional",
+    onClick: () => setQuickFilter("traditional"),
+    label: "Tradicionais"
+  }), /*#__PURE__*/React.createElement(FilterChip, {
+    active: quickFilter === "internet-source",
+    onClick: () => setQuickFilter("internet-source"),
+    label: "Fonte internet"
+  }), /*#__PURE__*/React.createElement(FilterChip, {
+    active: quickFilter === "confirmed",
+    onClick: () => setQuickFilter("confirmed"),
+    label: "Confirmadas"
   })), /*#__PURE__*/React.createElement("div", {
     className: "map-grid"
   }, /*#__PURE__*/React.createElement(NearbyList, {
@@ -216,7 +229,8 @@ function MapExperience({
     onSelectFair: onSelectFair
   }), /*#__PURE__*/React.createElement(FairDetails, {
     fair: selectedFair || filteredFairs[0],
-    onChangePage: onChangePage
+    onChangePage: onChangePage,
+    onConfirmFair: onConfirmFair
   })), /*#__PURE__*/React.createElement("nav", {
     className: "mobile-nav",
     "aria-label": "Navega\xE7\xE3o mobile"
@@ -270,15 +284,13 @@ function NearbyList({
     className: "mini-main"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mini-title-row"
-  }, /*#__PURE__*/React.createElement("h3", null, fair.shortName), /*#__PURE__*/React.createElement("span", {
-    className: `status-pill-small ${fair.statusKind}`
-  }, fair.statusLabel)), /*#__PURE__*/React.createElement("p", null, fair.distance, " km \xB7 ", fair.bairro), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, fair.shortName), /*#__PURE__*/React.createElement(ValidationBadge, {
+    fair: fair
+  })), /*#__PURE__*/React.createElement("p", null, fair.endereco, " \xB7 ", fair.bairro), /*#__PURE__*/React.createElement("div", {
     className: "rating-line"
-  }, /*#__PURE__*/React.createElement("span", null, "\u2B50 ", fair.rating), /*#__PURE__*/React.createElement("span", null, fair.scheduleLabel)), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, fair.dia_semana), /*#__PURE__*/React.createElement("span", null, fair.scheduleLabel)), /*#__PURE__*/React.createElement("div", {
     className: "tag-row"
-  }, fair.products.slice(0, 3).map(tag => /*#__PURE__*/React.createElement("span", {
-    key: tag
-  }, tag))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, fair.categoria), /*#__PURE__*/React.createElement("span", null, fair.fonte_nome)), /*#__PURE__*/React.createElement("div", {
     className: "card-actions"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button"
@@ -330,12 +342,13 @@ function FairMap({
     const view = cityViews[city];
     mapRef.current.setView(view.center, view.zoom);
     layerRef.current.clearLayers();
-    fairs.slice(0, 28).forEach((fair, index) => {
-      const coords = pseudoCoords(fair, city, index);
-      const color = statusColor(fair.statusKind);
+    fairs.slice(0, 28).forEach(fair => {
+      const coords = coordsFromFair(fair);
+      if (!coords) return;
+      const color = validationColorValue(fair.validationColor);
       const icon = window.L.divIcon({
         className: "fair-marker",
-        html: `<span style="background:${color}">${fair.markerIcon}</span>`,
+        html: `<span style="background:${color}">📍</span>`,
         iconSize: [36, 36],
         iconAnchor: [18, 18]
       });
@@ -352,7 +365,8 @@ function FairMap({
   }, [city, fairs, onSelectFair]);
   useEffect(() => {
     if (!mapRef.current || !selectedFair) return;
-    const coords = pseudoCoords(selectedFair, selectedFair.municipio, 0);
+    const coords = coordsFromFair(selectedFair);
+    if (!coords) return;
     mapRef.current.panTo(coords);
   }, [selectedFair]);
   return /*#__PURE__*/React.createElement("section", {
@@ -361,21 +375,22 @@ function FairMap({
     ref: mapNodeRef,
     className: "main-map",
     "aria-label": "Mapa das feiras pr\xF3ximas"
-  }), mapError && /*#__PURE__*/React.createElement("div", {
+  }), !fairs.some(coordsFromFair) && /*#__PURE__*/React.createElement("div", {
+    className: "map-fallback"
+  }, "A base ainda n\xE3o tem coordenadas reais. Mostrando a cidade e a lista valid\xE1vel."), mapError && /*#__PURE__*/React.createElement("div", {
     className: "map-fallback"
   }, mapError), /*#__PURE__*/React.createElement("div", {
     className: "map-legend"
-  }, /*#__PURE__*/React.createElement("strong", null, "Legenda"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+  }, /*#__PURE__*/React.createElement("strong", null, "Valida\xE7\xE3o"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     className: "open"
-  }), "Aberta agora"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+  }), "Confirmado pelo desenvolvedor"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     className: "later"
-  }), "Abre mais tarde"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    className: "closed"
-  }), "Fechada agora")));
+  }), "Fonte internet ou contribui\xE7\xE3o")));
 }
 function FairDetails({
   fair,
-  onChangePage
+  onChangePage,
+  onConfirmFair
 }) {
   if (!fair) {
     return /*#__PURE__*/React.createElement("aside", {
@@ -390,9 +405,9 @@ function FairDetails({
     className: "close-detail",
     type: "button",
     "aria-label": "Fechar detalhes"
-  }, "\xD7"), /*#__PURE__*/React.createElement("h2", null, fair.shortName), /*#__PURE__*/React.createElement("p", {
-    className: `detail-status ${fair.statusKind}`
-  }, fair.statusLabel, " \xB7 ", fair.scheduleLabel), /*#__PURE__*/React.createElement("p", {
+  }, "\xD7"), /*#__PURE__*/React.createElement("h2", null, fair.shortName), /*#__PURE__*/React.createElement(ValidationBadge, {
+    fair: fair
+  }), /*#__PURE__*/React.createElement("p", {
     className: "address-line"
   }, /*#__PURE__*/React.createElement(Icon, {
     type: "pin"
@@ -402,18 +417,30 @@ function FairDetails({
     type: "calendar"
   }), "Dias"), /*#__PURE__*/React.createElement("strong", null, fair.dia_semana), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
     type: "clock"
-  }), "Hor\xE1rio"), /*#__PURE__*/React.createElement("strong", null, fair.timeRange)), /*#__PURE__*/React.createElement("section", {
-    className: "ratings-box"
-  }, /*#__PURE__*/React.createElement("h3", null, "Avalia\xE7\xF5es por categoria"), [["Preço", fair.scorePrice], ["Qualidade", fair.scoreQuality], ["Variedade", fair.scoreVariety], ["Limpeza", fair.scoreClean], ["Acesso", fair.scoreAccess]].map(([label, score]) => /*#__PURE__*/React.createElement("div", {
-    key: label,
-    className: "score-row"
-  }, /*#__PURE__*/React.createElement("span", null, label), /*#__PURE__*/React.createElement("strong", null, "\u2B50 ", score)))), /*#__PURE__*/React.createElement("section", {
+  }), "Hor\xE1rio"), /*#__PURE__*/React.createElement("strong", null, fair.timeRange), /*#__PURE__*/React.createElement("span", null, "Categoria"), /*#__PURE__*/React.createElement("strong", null, fair.categoria), /*#__PURE__*/React.createElement("span", null, "Fonte"), /*#__PURE__*/React.createElement("strong", null, fair.fonte_nome)), /*#__PURE__*/React.createElement("section", {
+    className: "validation-box"
+  }, /*#__PURE__*/React.createElement("h3", null, "Sem\xE1foro de valida\xE7\xE3o"), /*#__PURE__*/React.createElement("div", {
+    className: `traffic-card ${fair.validationColor}`
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "traffic-light"
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, fair.validationLabel), /*#__PURE__*/React.createElement("p", null, fair.validationHelp))), fair.fonte_url !== "-" && /*#__PURE__*/React.createElement("a", {
+    className: "source-link",
+    href: fair.fonte_url,
+    target: "_blank",
+    rel: "noreferrer"
+  }, "Abrir fonte da informa\xE7\xE3o"), !fair.developerConfirmed && /*#__PURE__*/React.createElement("button", {
+    className: "confirm-dev-button",
+    type: "button",
+    onClick: () => onConfirmFair(fair.id)
+  }, "Confirmar como desenvolvedor")), /*#__PURE__*/React.createElement("section", {
     className: "comments-box"
-  }, /*#__PURE__*/React.createElement("h3", null, "O que as pessoas dizem"), /*#__PURE__*/React.createElement("p", null, "\u201CBoa para pastel e produtos frescos.\u201D"), /*#__PURE__*/React.createElement("p", null, "\u201CFica cheia depois das 10h.\u201D")), /*#__PURE__*/React.createElement("section", {
+  }, /*#__PURE__*/React.createElement("h3", null, "Observa\xE7\xF5es da base"), /*#__PURE__*/React.createElement("p", null, fair.observacoes)), /*#__PURE__*/React.createElement("section", {
     className: "waze-box"
-  }, /*#__PURE__*/React.createElement("h3", null, "Atualizar agora"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "Contribui\xE7\xF5es do site"), /*#__PURE__*/React.createElement("p", {
+    className: "pending-copy"
+  }, "Novas contribui\xE7\xF5es entram como amarelo at\xE9 revis\xE3o."), /*#__PURE__*/React.createElement("div", {
     className: "report-grid"
-  }, ["Aberta", "Fechada", "Muito cheia", "Preço bom", "Difícil estacionar", "Horário diferente"].map(label => /*#__PURE__*/React.createElement("button", {
+  }, ["Confirmar que funciona", "Informar horário", "Corrigir endereço", "Enviar foto"].map(label => /*#__PURE__*/React.createElement("button", {
     key: label,
     type: "button"
   }, label)))), /*#__PURE__*/React.createElement("div", {
@@ -465,7 +492,7 @@ function ContributionPage({
       className: "success-panel"
     }, /*#__PURE__*/React.createElement("div", {
       className: "success-icon"
-    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "Contribui\xE7\xE3o enviada"), /*#__PURE__*/React.createElement("h1", null, "Obrigado por ajudar o Feira Perto."), /*#__PURE__*/React.createElement("p", null, "Recebemos ", sentContribution.filledFields, " informa\xE7\xF5es. Elas ficam como contribui\xE7\xE3o pendente para revis\xE3o antes de entrar na base p\xFAblica."), /*#__PURE__*/React.createElement("div", {
+    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "Contribui\xE7\xE3o enviada"), /*#__PURE__*/React.createElement("h1", null, "Obrigado por ajudar o Feira Perto."), /*#__PURE__*/React.createElement("p", null, "Recebemos ", sentContribution.filledFields, " informa\xE7\xF5es. Contribui\xE7\xF5es do site entram em amarelo e ficam pendentes at\xE9 confirma\xE7\xE3o do desenvolvedor."), /*#__PURE__*/React.createElement("div", {
       className: "success-actions"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -639,27 +666,27 @@ function FilterChip({
     onClick: onClick
   }, label);
 }
-function makeDisplayFair(fair) {
+function ValidationBadge({
+  fair
+}) {
+  return /*#__PURE__*/React.createElement("span", {
+    className: `validation-badge ${fair.validationColor}`
+  }, /*#__PURE__*/React.createElement("i", null), fair.validationLabel);
+}
+function makeDisplayFair(fair, confirmedIds = {}) {
   if (!fair) return null;
-  const statusKind = getStatusKind(fair);
-  const ratingSeed = seededNumber(fair.id, 38, 49) / 10;
-  const products = productTags[fair.categoria] || productTags.Tradicional;
+  const developerConfirmed = Boolean(confirmedIds[fair.id]) || fair.confirmado_desenvolvedor === "sim";
+  const validationColor = developerConfirmed ? "green" : "yellow";
   return {
     ...fair,
     shortName: cleanFairName(fair),
-    statusKind,
-    statusLabel: statusKind === "open" ? "Aberta agora" : statusKind === "later" ? "Abre hoje" : "Fechada agora",
-    scheduleLabel: fair.horario_fim !== "-" ? `fecha às ${fair.horario_fim.replace(":00", "h")}` : "horário a confirmar",
+    statusKind: developerConfirmed ? "open" : "later",
+    scheduleLabel: fair.horario_fim !== "-" ? `até ${fair.horario_fim.replace(":00", "h")}` : "horário a confirmar",
     timeRange: fair.horario_inicio !== "-" ? `${fair.horario_inicio.replace(":00", "h")} às ${fair.horario_fim.replace(":00", "h")}` : "a confirmar",
-    rating: ratingSeed.toFixed(1).replace(".", ","),
-    distance: (seededNumber(fair.id, 8, 42) / 10).toFixed(1).replace(".", ","),
-    products,
-    markerIcon: fair.categoria === "Orgânica" ? "🥬" : fair.categoria === "Noturna" ? "🌙" : fair.categoria === "Gastronômica" ? "🍽️" : "📍",
-    scorePrice: score(fair.id, 41),
-    scoreQuality: score(fair.id, 47),
-    scoreVariety: score(fair.id, 48),
-    scoreClean: score(fair.id, 40),
-    scoreAccess: score(fair.id, 39)
+    developerConfirmed,
+    validationColor,
+    validationLabel: developerConfirmed ? "Confirmado" : validationSourceLabel(fair.status_validacao),
+    validationHelp: developerConfirmed ? "Esta informação foi confirmada pelo desenvolvedor nesta instalação." : "Existe fonte ou contribuição pendente, mas ainda falta confirmação do desenvolvedor."
   };
 }
 function getStatusKind(fair) {
@@ -683,14 +710,25 @@ function drawStreetTint(coords, color) {
     lineJoin: "round"
   });
 }
-function pseudoCoords(fair, city, index) {
-  const center = cityViews[city]?.center || cityViews.Guarulhos.center;
-  const angle = seededNumber(fair.id, 0, 360) * (Math.PI / 180);
-  const radius = 0.012 + seededNumber(`${fair.id}-${index}`, 0, 70) / 1000;
-  return [center[0] + Math.sin(angle) * radius, center[1] + Math.cos(angle) * radius];
+function coordsFromFair(fair) {
+  const lat = Number(fair.latitude || fair.lat);
+  const lon = Number(fair.longitude || fair.lon || fair.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  return [lat, lon];
 }
-function statusColor(kind) {
-  return kind === "open" ? "#2fa35d" : kind === "later" ? "#e3a42b" : "#dc4f5f";
+function validationColorValue(color) {
+  return color === "green" ? "#2fa35d" : "#e3a42b";
+}
+function validationSourceLabel(status) {
+  if (status === "contribuicao_site") return "Contribuição pendente";
+  return "Fonte internet";
+}
+function readConfirmedIds() {
+  try {
+    return JSON.parse(window.localStorage.getItem("feira-confirmadas-dev") || "{}");
+  } catch (error) {
+    return {};
+  }
 }
 function mapsUrl(fair) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${fair.endereco}, ${fair.bairro}, ${fair.municipio}, SP`)}`;
@@ -712,13 +750,5 @@ function timeToMinutes(value) {
 }
 function normalizeText(value) {
   return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
-function seededNumber(seed, min, max) {
-  let hash = 0;
-  for (const char of String(seed)) hash = (hash * 31 + char.charCodeAt(0)) % 100000;
-  return min + hash % (max - min + 1);
-}
-function score(seed, floor) {
-  return (seededNumber(seed, floor, 49) / 10).toFixed(1).replace(".", ",");
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));

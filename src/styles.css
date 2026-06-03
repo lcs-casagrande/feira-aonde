@@ -464,6 +464,46 @@ p {
   font-weight: 850;
 }
 
+.validation-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.validation-badge i,
+.traffic-light {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.validation-badge.yellow {
+  color: #7d5b0d;
+  background: #fff4d7;
+}
+
+.validation-badge.yellow i,
+.traffic-card.yellow .traffic-light {
+  background: #e3a42b;
+}
+
+.validation-badge.green {
+  color: #208048;
+  background: #e8f5e9;
+}
+
+.validation-badge.green i,
+.traffic-card.green .traffic-light {
+  background: #2fa35d;
+}
+
 .status-pill-small.open,
 .detail-status.open {
   color: #208048;
@@ -661,6 +701,7 @@ p {
 
 .detail-grid,
 .ratings-box,
+.validation-box,
 .comments-box,
 .waze-box {
   padding: 12px;
@@ -668,6 +709,61 @@ p {
   background: #ffffff;
   border: 1px solid #dfe6dd;
   border-radius: 8px;
+}
+
+.validation-box h3 {
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.traffic-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.traffic-card.yellow {
+  background: #fff8e8;
+  border: 1px solid #f0d28b;
+}
+
+.traffic-card.green {
+  background: #edf8ee;
+  border: 1px solid #b7ddbb;
+}
+
+.traffic-card p,
+.pending-copy {
+  margin-top: 3px;
+  color: #64736b;
+}
+
+.source-link,
+.confirm-dev-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 38px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-weight: 850;
+}
+
+.source-link {
+  color: #345246;
+  background: #ffffff;
+  border: 1px solid #dfe6dd;
+}
+
+.confirm-dev-button {
+  color: #ffffff;
+  background: #2fa35d;
+  border: 1px solid #2fa35d;
 }
 
 .detail-grid {

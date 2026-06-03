@@ -63,11 +63,6 @@ def normalize_day(value):
 
 
 def category_hours(category):
-    normalized = clean(category).lower()
-    if "noturna" in normalized:
-        return "16:00", "21:00"
-    if "tradicional" in normalized:
-        return "08:00", "14:00"
     return "-", "-"
 
 
@@ -147,8 +142,9 @@ def read_sp_xlsx(path):
                     "codigo_oficial": code,
                     "fonte_nome": "Prefeitura de São Paulo - SESANA",
                     "fonte_url": SP_SOURCE_URL,
-                    "status_validacao": "oficial",
-                    "observacoes": "Importado da planilha oficial de endereços de feiras livres.",
+                    "status_validacao": "fonte_internet",
+                    "confirmado_desenvolvedor": "nao",
+                    "observacoes": "Importado de fonte oficial na internet; aguarda confirmação do desenvolvedor no site.",
                 }
             )
     return records
@@ -251,8 +247,9 @@ def read_guarulhos_page():
                 "codigo_oficial": "-",
                 "fonte_nome": "Guarulhos Todo Dia",
                 "fonte_url": GUARULHOS_SOURCE_URL,
-                "status_validacao": "a_confirmar",
-                "observacoes": "Lista pública local; confirmar com moradores, feirantes ou Prefeitura de Guarulhos.",
+                "status_validacao": "fonte_internet",
+                "confirmado_desenvolvedor": "nao",
+                "observacoes": "Lista pública local na internet; aguarda confirmação do desenvolvedor no site.",
             }
         )
     return records
@@ -278,6 +275,7 @@ def write_outputs(records):
         "fonte_nome",
         "fonte_url",
         "status_validacao",
+        "confirmado_desenvolvedor",
         "observacoes",
     ]
 

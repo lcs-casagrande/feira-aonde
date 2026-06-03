@@ -25,13 +25,6 @@ const cityViews = {
   "São Paulo": { center: [-23.5505, -46.6333], zoom: 12 },
 };
 
-const productTags = {
-  Orgânica: ["Orgânicos", "Verduras", "Frutas"],
-  Noturna: ["Comida pronta", "Pastel", "Caldo de cana"],
-  Tradicional: ["Frutas", "Verduras", "Pastel"],
-  "Feira livre tradicional": ["Frutas", "Verduras", "Pastel"],
-};
-
 function Icon({ type, size = 18, className = "" }) {
   let path = "M12 22s7-5.2 7-12a7 7 0 10-14 0c0 6.8 7 12 7 12zm0-9a3 3 0 100-6 3 3 0 000 6z";
   if (type === "map") path = "M4 6l5-2 6 2 5-2v16l-5 2-6-2-5 2V6zm5-2v16m6-14v16";
@@ -59,6 +52,13 @@ function App() {
   const [fairs, setFairs] = useState([]);
   const [selectedFair, setSelectedFair] = useState(null);
   const [dataError, setDataError] = useState("");
+  const [confirmedIds, setConfirmedIds] = useState(() => readConfirmedIds());
+
+  function confirmFair(fairId) {
+    const next = { ...confirmedIds, [fairId]: true };
+    setConfirmedIds(next);
+    window.localStorage.setItem("feira-confirmadas-dev", JSON.stringify(next));
+  }
 
   useEffect(() => {
     fetch("./data/feiras.json")
@@ -78,7 +78,14 @@ function App() {
     <main className="feira-app">
       {dataError && <div className="app-warning">{dataError}</div>}
       {page === "map" ? (
-        <MapExperience fairs={fairs} selectedFair={selectedFair} onSelectFair={setSelectedFair} onChangePage={setPage} />
+        <MapExperience
+          fairs={fairs}
+          selectedFair={selectedFair}
+          onSelectFair={setSelectedFair}
+          onChangePage={setPage}
+          confirmedIds={confirmedIds}
+          onConfirmFair={confirmFair}
+        />
       ) : (
         <ContributionPage page={page} onChangePage={setPage} />
       )}
@@ -86,7 +93,7 @@ function App() {
   );
 }
 
-function MapExperience({ fairs, selectedFair, onSelectFair, onChangePage }) {
+function MapExperience({ fairs, selectedFair, onSelectFair, onChangePage, confirmedIds, onConfirmFair }) {
   const [city, setCity] = useState("Guarulhos");
   const [day, setDay] = useState(todayName());
   const [query, setQuery] = useState("");
@@ -97,10 +104,12 @@ function MapExperience({ fairs, selectedFair, onSelectFair, onChangePage }) {
     return fairs
       .filter((fair) => fair.municipio === city)
       .filter((fair) => {
-        if (quickFilter === "open-now" || quickFilter === "today") return fair.dia_semana === day;
+        if (quickFilter === "today") return fair.dia_semana === day;
         if (quickFilter === "organic") return normalizeText(fair.categoria).includes("organica");
-        if (quickFilter === "pastel") return true;
-        if (quickFilter === "best") return true;
+        if (quickFilter === "night") return normalizeText(fair.categoria).includes("noturna");
+        if (quickFilter === "traditional") return normalizeText(fair.categoria).includes("tradicional");
+        if (quickFilter === "confirmed") return Boolean(confirmedIds[fair.id]);
+        if (quickFilter === "internet-source") return !confirmedIds[fair.id] && fair.status_validacao === "fonte_internet";
         return fair.dia_semana === day;
       })
       .filter((fair) => {
@@ -110,8 +119,8 @@ function MapExperience({ fairs, selectedFair, onSelectFair, onChangePage }) {
           .some((value) => value.includes(normalizedQuery));
       })
       .slice(0, 38)
-      .map(makeDisplayFair);
-  }, [city, day, fairs, query, quickFilter]);
+      .map((fair) => makeDisplayFair(fair, confirmedIds));
+  }, [city, day, fairs, query, quickFilter, confirmedIds]);
 
   useEffect(() => {
     if (!filteredFairs.length) return;
@@ -148,23 +157,24 @@ function MapExperience({ fairs, selectedFair, onSelectFair, onChangePage }) {
       </header>
 
       <div className="quickbar">
-        <button className="primary-action" type="button" onClick={() => setQuickFilter("open-now")}>
+        <button className="primary-action" type="button" onClick={() => setQuickFilter("today")}>
           <Icon type="calendar" />
-          Ver feiras abertas hoje
+          Ver feiras de hoje
         </button>
         <SegmentedSelect label="Cidade" value={city} onChange={setCity} options={["Guarulhos", "São Paulo"]} />
         <SegmentedSelect label="Dia" value={day} onChange={setDay} options={weekDays} />
-        <FilterChip active={quickFilter === "open-now"} onClick={() => setQuickFilter("open-now")} label="Abertas agora" />
         <FilterChip active={quickFilter === "today"} onClick={() => setQuickFilter("today")} label="Hoje" />
         <FilterChip active={quickFilter === "organic"} onClick={() => setQuickFilter("organic")} label="Orgânicas" />
-        <FilterChip active={quickFilter === "pastel"} onClick={() => setQuickFilter("pastel")} label="Tem pastel" />
-        <FilterChip active={quickFilter === "best"} onClick={() => setQuickFilter("best")} label="Melhor avaliadas" />
+        <FilterChip active={quickFilter === "night"} onClick={() => setQuickFilter("night")} label="Noturnas" />
+        <FilterChip active={quickFilter === "traditional"} onClick={() => setQuickFilter("traditional")} label="Tradicionais" />
+        <FilterChip active={quickFilter === "internet-source"} onClick={() => setQuickFilter("internet-source")} label="Fonte internet" />
+        <FilterChip active={quickFilter === "confirmed"} onClick={() => setQuickFilter("confirmed")} label="Confirmadas" />
       </div>
 
       <div className="map-grid">
         <NearbyList fairs={filteredFairs} city={city} onSelectFair={onSelectFair} onChangePage={onChangePage} />
         <FairMap fairs={filteredFairs} selectedFair={selectedFair} city={city} onSelectFair={onSelectFair} />
-        <FairDetails fair={selectedFair || filteredFairs[0]} onChangePage={onChangePage} />
+        <FairDetails fair={selectedFair || filteredFairs[0]} onChangePage={onChangePage} onConfirmFair={onConfirmFair} />
       </div>
 
       <nav className="mobile-nav" aria-label="Navegação mobile">
@@ -196,15 +206,16 @@ function NearbyList({ fairs, city, onSelectFair, onChangePage }) {
             <div className="mini-main">
               <div className="mini-title-row">
                 <h3>{fair.shortName}</h3>
-                <span className={`status-pill-small ${fair.statusKind}`}>{fair.statusLabel}</span>
+                <ValidationBadge fair={fair} />
               </div>
-              <p>{fair.distance} km · {fair.bairro}</p>
+              <p>{fair.endereco} · {fair.bairro}</p>
               <div className="rating-line">
-                <span>⭐ {fair.rating}</span>
+                <span>{fair.dia_semana}</span>
                 <span>{fair.scheduleLabel}</span>
               </div>
               <div className="tag-row">
-                {fair.products.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}
+                <span>{fair.categoria}</span>
+                <span>{fair.fonte_nome}</span>
               </div>
               <div className="card-actions">
                 <button type="button"><Icon type="list" />Ver detalhes</button>
@@ -253,12 +264,13 @@ function FairMap({ fairs, selectedFair, city, onSelectFair }) {
     mapRef.current.setView(view.center, view.zoom);
     layerRef.current.clearLayers();
 
-    fairs.slice(0, 28).forEach((fair, index) => {
-      const coords = pseudoCoords(fair, city, index);
-      const color = statusColor(fair.statusKind);
+    fairs.slice(0, 28).forEach((fair) => {
+      const coords = coordsFromFair(fair);
+      if (!coords) return;
+      const color = validationColorValue(fair.validationColor);
       const icon = window.L.divIcon({
         className: "fair-marker",
-        html: `<span style="background:${color}">${fair.markerIcon}</span>`,
+        html: `<span style="background:${color}">📍</span>`,
         iconSize: [36, 36],
         iconAnchor: [18, 18],
       });
@@ -273,25 +285,28 @@ function FairMap({ fairs, selectedFair, city, onSelectFair }) {
 
   useEffect(() => {
     if (!mapRef.current || !selectedFair) return;
-    const coords = pseudoCoords(selectedFair, selectedFair.municipio, 0);
+    const coords = coordsFromFair(selectedFair);
+    if (!coords) return;
     mapRef.current.panTo(coords);
   }, [selectedFair]);
 
   return (
     <section className="map-stage">
       <div ref={mapNodeRef} className="main-map" aria-label="Mapa das feiras próximas" />
+      {!fairs.some(coordsFromFair) && (
+        <div className="map-fallback">A base ainda não tem coordenadas reais. Mostrando a cidade e a lista validável.</div>
+      )}
       {mapError && <div className="map-fallback">{mapError}</div>}
       <div className="map-legend">
-        <strong>Legenda</strong>
-        <span><i className="open" />Aberta agora</span>
-        <span><i className="later" />Abre mais tarde</span>
-        <span><i className="closed" />Fechada agora</span>
+        <strong>Validação</strong>
+        <span><i className="open" />Confirmado pelo desenvolvedor</span>
+        <span><i className="later" />Fonte internet ou contribuição</span>
       </div>
     </section>
   );
 }
 
-function FairDetails({ fair, onChangePage }) {
+function FairDetails({ fair, onChangePage, onConfirmFair }) {
   if (!fair) {
     return (
       <aside className="details-panel empty">
@@ -305,7 +320,7 @@ function FairDetails({ fair, onChangePage }) {
       <div className="detail-photo" />
       <button className="close-detail" type="button" aria-label="Fechar detalhes">×</button>
       <h2>{fair.shortName}</h2>
-      <p className={`detail-status ${fair.statusKind}`}>{fair.statusLabel} · {fair.scheduleLabel}</p>
+      <ValidationBadge fair={fair} />
       <p className="address-line"><Icon type="pin" />{fair.endereco}, {fair.bairro} · {fair.municipio}/SP</p>
 
       <div className="detail-grid">
@@ -313,34 +328,43 @@ function FairDetails({ fair, onChangePage }) {
         <strong>{fair.dia_semana}</strong>
         <span><Icon type="clock" />Horário</span>
         <strong>{fair.timeRange}</strong>
+        <span>Categoria</span>
+        <strong>{fair.categoria}</strong>
+        <span>Fonte</span>
+        <strong>{fair.fonte_nome}</strong>
       </div>
 
-      <section className="ratings-box">
-        <h3>Avaliações por categoria</h3>
-        {[
-          ["Preço", fair.scorePrice],
-          ["Qualidade", fair.scoreQuality],
-          ["Variedade", fair.scoreVariety],
-          ["Limpeza", fair.scoreClean],
-          ["Acesso", fair.scoreAccess],
-        ].map(([label, score]) => (
-          <div key={label} className="score-row">
-            <span>{label}</span>
-            <strong>⭐ {score}</strong>
+      <section className="validation-box">
+        <h3>Semáforo de validação</h3>
+        <div className={`traffic-card ${fair.validationColor}`}>
+          <span className="traffic-light" />
+          <div>
+            <strong>{fair.validationLabel}</strong>
+            <p>{fair.validationHelp}</p>
           </div>
-        ))}
+        </div>
+        {fair.fonte_url !== "-" && (
+          <a className="source-link" href={fair.fonte_url} target="_blank" rel="noreferrer">
+            Abrir fonte da informação
+          </a>
+        )}
+        {!fair.developerConfirmed && (
+          <button className="confirm-dev-button" type="button" onClick={() => onConfirmFair(fair.id)}>
+            Confirmar como desenvolvedor
+          </button>
+        )}
       </section>
 
       <section className="comments-box">
-        <h3>O que as pessoas dizem</h3>
-        <p>“Boa para pastel e produtos frescos.”</p>
-        <p>“Fica cheia depois das 10h.”</p>
+        <h3>Observações da base</h3>
+        <p>{fair.observacoes}</p>
       </section>
 
       <section className="waze-box">
-        <h3>Atualizar agora</h3>
+        <h3>Contribuições do site</h3>
+        <p className="pending-copy">Novas contribuições entram como amarelo até revisão.</p>
         <div className="report-grid">
-          {["Aberta", "Fechada", "Muito cheia", "Preço bom", "Difícil estacionar", "Horário diferente"].map((label) => (
+          {["Confirmar que funciona", "Informar horário", "Corrigir endereço", "Enviar foto"].map((label) => (
             <button key={label} type="button">{label}</button>
           ))}
         </div>
@@ -376,7 +400,7 @@ function ContributionPage({ page, onChangePage }) {
           <span>Contribuição enviada</span>
           <h1>Obrigado por ajudar o Feira Perto.</h1>
           <p>
-            Recebemos {sentContribution.filledFields} informações. Elas ficam como contribuição pendente para revisão antes de entrar na base pública.
+            Recebemos {sentContribution.filledFields} informações. Contribuições do site entram em amarelo e ficam pendentes até confirmação do desenvolvedor.
           </p>
           <div className="success-actions">
             <button type="button" onClick={() => onChangePage("map")}><Icon type="map" />Voltar ao mapa</button>
@@ -496,27 +520,31 @@ function FilterChip({ active, label, onClick }) {
   );
 }
 
-function makeDisplayFair(fair) {
+function ValidationBadge({ fair }) {
+  return (
+    <span className={`validation-badge ${fair.validationColor}`}>
+      <i />
+      {fair.validationLabel}
+    </span>
+  );
+}
+
+function makeDisplayFair(fair, confirmedIds = {}) {
   if (!fair) return null;
-  const statusKind = getStatusKind(fair);
-  const ratingSeed = seededNumber(fair.id, 38, 49) / 10;
-  const products = productTags[fair.categoria] || productTags.Tradicional;
+  const developerConfirmed = Boolean(confirmedIds[fair.id]) || fair.confirmado_desenvolvedor === "sim";
+  const validationColor = developerConfirmed ? "green" : "yellow";
   return {
     ...fair,
     shortName: cleanFairName(fair),
-    statusKind,
-    statusLabel: statusKind === "open" ? "Aberta agora" : statusKind === "later" ? "Abre hoje" : "Fechada agora",
-    scheduleLabel: fair.horario_fim !== "-" ? `fecha às ${fair.horario_fim.replace(":00", "h")}` : "horário a confirmar",
+    statusKind: developerConfirmed ? "open" : "later",
+    scheduleLabel: fair.horario_fim !== "-" ? `até ${fair.horario_fim.replace(":00", "h")}` : "horário a confirmar",
     timeRange: fair.horario_inicio !== "-" ? `${fair.horario_inicio.replace(":00", "h")} às ${fair.horario_fim.replace(":00", "h")}` : "a confirmar",
-    rating: ratingSeed.toFixed(1).replace(".", ","),
-    distance: (seededNumber(fair.id, 8, 42) / 10).toFixed(1).replace(".", ","),
-    products,
-    markerIcon: fair.categoria === "Orgânica" ? "🥬" : fair.categoria === "Noturna" ? "🌙" : fair.categoria === "Gastronômica" ? "🍽️" : "📍",
-    scorePrice: score(fair.id, 41),
-    scoreQuality: score(fair.id, 47),
-    scoreVariety: score(fair.id, 48),
-    scoreClean: score(fair.id, 40),
-    scoreAccess: score(fair.id, 39),
+    developerConfirmed,
+    validationColor,
+    validationLabel: developerConfirmed ? "Confirmado" : validationSourceLabel(fair.status_validacao),
+    validationHelp: developerConfirmed
+      ? "Esta informação foi confirmada pelo desenvolvedor nesta instalação."
+      : "Existe fonte ou contribuição pendente, mas ainda falta confirmação do desenvolvedor.",
   };
 }
 
@@ -544,15 +572,28 @@ function drawStreetTint(coords, color) {
   );
 }
 
-function pseudoCoords(fair, city, index) {
-  const center = cityViews[city]?.center || cityViews.Guarulhos.center;
-  const angle = seededNumber(fair.id, 0, 360) * (Math.PI / 180);
-  const radius = 0.012 + (seededNumber(`${fair.id}-${index}`, 0, 70) / 1000);
-  return [center[0] + Math.sin(angle) * radius, center[1] + Math.cos(angle) * radius];
+function coordsFromFair(fair) {
+  const lat = Number(fair.latitude || fair.lat);
+  const lon = Number(fair.longitude || fair.lon || fair.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  return [lat, lon];
 }
 
-function statusColor(kind) {
-  return kind === "open" ? "#2fa35d" : kind === "later" ? "#e3a42b" : "#dc4f5f";
+function validationColorValue(color) {
+  return color === "green" ? "#2fa35d" : "#e3a42b";
+}
+
+function validationSourceLabel(status) {
+  if (status === "contribuicao_site") return "Contribuição pendente";
+  return "Fonte internet";
+}
+
+function readConfirmedIds() {
+  try {
+    return JSON.parse(window.localStorage.getItem("feira-confirmadas-dev") || "{}");
+  } catch (error) {
+    return {};
+  }
 }
 
 function mapsUrl(fair) {
@@ -585,16 +626,6 @@ function normalizeText(value) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
-}
-
-function seededNumber(seed, min, max) {
-  let hash = 0;
-  for (const char of String(seed)) hash = (hash * 31 + char.charCodeAt(0)) % 100000;
-  return min + (hash % (max - min + 1));
-}
-
-function score(seed, floor) {
-  return (seededNumber(seed, floor, 49) / 10).toFixed(1).replace(".", ",");
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);

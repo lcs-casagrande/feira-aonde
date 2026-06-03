@@ -24,11 +24,19 @@ Arquivos consumíveis pelo site:
 - `codigo_oficial`: código oficial quando disponível.
 - `fonte_nome`: nome da fonte.
 - `fonte_url`: URL da fonte.
-- `status_validacao`: `oficial` ou `a_confirmar`.
+- `status_validacao`: `fonte_internet`, `contribuicao_site` ou `confirmado`.
+- `confirmado_desenvolvedor`: `sim` ou `nao`.
 - `observacoes`: observações sobre origem e validação.
+
+## Semáforo
+
+- Amarelo: informação veio de fonte da internet ou contribuição do site e ainda aguarda confirmação.
+- Verde: informação confirmada pelo desenvolvedor.
+
+Não use avaliações, distâncias, produtos ou horários que não estejam na fonte. Quando o campo não existir na fonte, manter `-` ou `a confirmar`.
 
 ## Fontes
 
-São Paulo usa a planilha oficial da Prefeitura de São Paulo/SESANA.
+São Paulo usa a planilha oficial da Prefeitura de São Paulo/SESANA, marcada inicialmente como fonte da internet até confirmação do desenvolvedor.
 
-Guarulhos usa uma lista pública local como base inicial e deve ser validada por usuários, feirantes ou Prefeitura de Guarulhos.
+Guarulhos usa uma lista pública local como base inicial e deve ser validada por usuários, feirantes, Prefeitura de Guarulhos ou pelo desenvolvedor.
