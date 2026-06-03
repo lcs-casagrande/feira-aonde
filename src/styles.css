@@ -572,6 +572,23 @@ p {
   z-index: 500;
 }
 
+.map-fallback {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 510;
+  width: min(92%, 420px);
+  padding: 12px 14px;
+  color: #7a4f0b;
+  text-align: center;
+  background: #fff8e8;
+  border: 1px solid #f0d28b;
+  border-radius: 8px;
+  box-shadow: 0 10px 26px rgba(48, 38, 17, 0.12);
+  transform: translateX(-50%);
+  font-weight: 800;
+}
+
 .map-legend span {
   display: inline-flex;
   align-items: center;

@@ -304,21 +304,26 @@ function FairMap({
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
   const layerRef = useRef(null);
+  const [mapError, setMapError] = useState("");
   useEffect(() => {
     if (!mapNodeRef.current || mapRef.current || !window.L) return;
-    const view = cityViews[city];
-    mapRef.current = window.L.map(mapNodeRef.current, {
-      zoomControl: false,
-      scrollWheelZoom: true
-    }).setView(view.center, view.zoom);
-    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(mapRef.current);
-    window.L.control.zoom({
-      position: "right"
-    }).addTo(mapRef.current);
-    layerRef.current = window.L.layerGroup().addTo(mapRef.current);
+    try {
+      const view = cityViews[city];
+      mapRef.current = window.L.map(mapNodeRef.current, {
+        zoomControl: false,
+        scrollWheelZoom: true
+      }).setView(view.center, view.zoom);
+      window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(mapRef.current);
+      window.L.control.zoom({
+        position: "topright"
+      }).addTo(mapRef.current);
+      layerRef.current = window.L.layerGroup().addTo(mapRef.current);
+    } catch (error) {
+      setMapError("O mapa não carregou, mas a lista de feiras está disponível.");
+    }
   }, [city]);
   useEffect(() => {
     if (!mapRef.current || !layerRef.current) return;
@@ -356,7 +361,9 @@ function FairMap({
     ref: mapNodeRef,
     className: "main-map",
     "aria-label": "Mapa das feiras pr\xF3ximas"
-  }), /*#__PURE__*/React.createElement("div", {
+  }), mapError && /*#__PURE__*/React.createElement("div", {
+    className: "map-fallback"
+  }, mapError), /*#__PURE__*/React.createElement("div", {
     className: "map-legend"
   }, /*#__PURE__*/React.createElement("strong", null, "Legenda"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     className: "open"

@@ -224,22 +224,27 @@ function FairMap({ fairs, selectedFair, city, onSelectFair }) {
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
   const layerRef = useRef(null);
+  const [mapError, setMapError] = useState("");
 
   useEffect(() => {
     if (!mapNodeRef.current || mapRef.current || !window.L) return;
-    const view = cityViews[city];
-    mapRef.current = window.L.map(mapNodeRef.current, {
-      zoomControl: false,
-      scrollWheelZoom: true,
-    }).setView(view.center, view.zoom);
+    try {
+      const view = cityViews[city];
+      mapRef.current = window.L.map(mapNodeRef.current, {
+        zoomControl: false,
+        scrollWheelZoom: true,
+      }).setView(view.center, view.zoom);
 
-    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(mapRef.current);
+      window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(mapRef.current);
 
-    window.L.control.zoom({ position: "right" }).addTo(mapRef.current);
-    layerRef.current = window.L.layerGroup().addTo(mapRef.current);
+      window.L.control.zoom({ position: "topright" }).addTo(mapRef.current);
+      layerRef.current = window.L.layerGroup().addTo(mapRef.current);
+    } catch (error) {
+      setMapError("O mapa não carregou, mas a lista de feiras está disponível.");
+    }
   }, [city]);
 
   useEffect(() => {
@@ -275,6 +280,7 @@ function FairMap({ fairs, selectedFair, city, onSelectFair }) {
   return (
     <section className="map-stage">
       <div ref={mapNodeRef} className="main-map" aria-label="Mapa das feiras próximas" />
+      {mapError && <div className="map-fallback">{mapError}</div>}
       <div className="map-legend">
         <strong>Legenda</strong>
         <span><i className="open" />Aberta agora</span>
