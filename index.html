@@ -11,32 +11,45 @@
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
-    <div id="root">
-      <section class="boot-screen" aria-live="polite">
-        <div class="boot-card">
-          <div class="boot-logo">🥬📍</div>
-          <h1>Feira Perto</h1>
-          <p id="boot-status">Carregando o mapa das feiras...</p>
-          <div class="boot-progress" aria-hidden="true">
-            <span></span>
-          </div>
-          <small>Se esta mensagem ficar na tela, toque em atualizar ou abra novamente o link.</small>
+    <section id="boot-screen" class="boot-screen" aria-live="polite">
+      <div class="boot-card">
+        <div class="boot-logo">🥬📍</div>
+        <h1>Feira Perto</h1>
+        <p id="boot-status">Carregando o mapa das feiras...</p>
+        <div class="boot-progress" aria-hidden="true">
+          <span></span>
         </div>
-      </section>
-    </div>
+        <small id="boot-help">Se esta mensagem ficar na tela, toque em atualizar ou abra novamente o link.</small>
+      </div>
+    </section>
+    <div id="root"></div>
     <script>
       window.__feiraErrors = [];
+      window.__feiraAppReady = false;
+      window.__feiraReady = function () {
+        window.__feiraAppReady = true;
+        var boot = document.getElementById("boot-screen");
+        if (boot) {
+          boot.classList.add("is-hidden");
+          window.setTimeout(function () {
+            if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+          }, 360);
+        }
+      };
       window.addEventListener("error", function (event) {
         window.__feiraErrors.push(event.message || "Erro ao carregar script");
         var status = document.getElementById("boot-status");
         if (status) {
           status.textContent = "Algo travou ao carregar. Tente atualizar a página.";
         }
+        var help = document.getElementById("boot-help");
+        if (help && event.message) {
+          help.textContent = "Erro detectado: " + event.message;
+        }
       });
       window.setTimeout(function () {
-        var root = document.getElementById("root");
         var status = document.getElementById("boot-status");
-        if (root && status && root.querySelector(".boot-screen")) {
+        if (!window.__feiraAppReady && status) {
           status.textContent = "Ainda carregando. Se continuar assim, atualize a página.";
         }
       }, 6000);

@@ -58,6 +58,7 @@ function App() {
   const [page, setPage] = useState("map");
   const [fairs, setFairs] = useState([]);
   const [selectedFair, setSelectedFair] = useState(null);
+  const [dataError, setDataError] = useState("");
 
   useEffect(() => {
     fetch("./data/feiras.json")
@@ -65,11 +66,17 @@ function App() {
       .then((data) => {
         setFairs(data);
         setSelectedFair(makeDisplayFair(data.find((fair) => fair.municipio === "Guarulhos") || data[0]));
+        if (window.__feiraReady) window.__feiraReady();
+      })
+      .catch((error) => {
+        setDataError("Não foi possível carregar a base de feiras. Atualize a página.");
+        if (window.__feiraReady) window.__feiraReady();
       });
   }, []);
 
   return (
     <main className="feira-app">
+      {dataError && <div className="app-warning">{dataError}</div>}
       {page === "map" ? (
         <MapExperience fairs={fairs} selectedFair={selectedFair} onSelectFair={setSelectedFair} onChangePage={setPage} />
       ) : (

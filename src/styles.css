@@ -41,6 +41,9 @@ a {
 }
 
 .boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   display: grid;
   place-items: center;
   min-height: 100vh;
@@ -51,6 +54,13 @@ a {
     linear-gradient(90deg, rgba(47, 163, 93, 0.08) 1px, transparent 1px),
     #f4f6f2;
   background-size: 28px 28px;
+  opacity: 1;
+  transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+
+.boot-screen.is-hidden {
+  visibility: hidden;
+  opacity: 0;
 }
 
 .boot-card {
@@ -125,6 +135,23 @@ a {
   min-height: 100vh;
   min-height: 100dvh;
   background: #f4f6f2;
+}
+
+.app-warning {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 9998;
+  width: min(92vw, 520px);
+  padding: 12px 14px;
+  color: #7a261f;
+  text-align: center;
+  background: #fff0ed;
+  border: 1px solid #f0bbb3;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(35, 21, 18, 0.14);
+  transform: translateX(-50%);
+  font-weight: 800;
 }
 
 .topbar {
