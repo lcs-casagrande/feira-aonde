@@ -444,6 +444,41 @@ function ContributionPage({
   onChangePage
 }) {
   const isComplete = page === "complete";
+  const [sentContribution, setSentContribution] = useState(null);
+  function handleContributionSubmit(event, type) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const filledFields = Array.from(formData.entries()).filter(([, value]) => String(value).trim() !== "").length;
+    setSentContribution({
+      type,
+      filledFields
+    });
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
+  if (sentContribution) {
+    return /*#__PURE__*/React.createElement("section", {
+      className: "contribution-screen"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "success-panel"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "success-icon"
+    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "Contribui\xE7\xE3o enviada"), /*#__PURE__*/React.createElement("h1", null, "Obrigado por ajudar o Feira Perto."), /*#__PURE__*/React.createElement("p", null, "Recebemos ", sentContribution.filledFields, " informa\xE7\xF5es. Elas ficam como contribui\xE7\xE3o pendente para revis\xE3o antes de entrar na base p\xFAblica."), /*#__PURE__*/React.createElement("div", {
+      className: "success-actions"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => onChangePage("map")
+    }, /*#__PURE__*/React.createElement(Icon, {
+      type: "map"
+    }), "Voltar ao mapa"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => setSentContribution(null)
+    }, /*#__PURE__*/React.createElement(Icon, {
+      type: "plus"
+    }), "Enviar outra"))));
+  }
   return /*#__PURE__*/React.createElement("section", {
     className: "contribution-screen"
   }, /*#__PURE__*/React.createElement("header", {
@@ -453,18 +488,28 @@ function ContributionPage({
     onClick: () => onChangePage("map")
   }, /*#__PURE__*/React.createElement(Icon, {
     type: "map"
-  }), "Voltar ao mapa"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Contribuir"), /*#__PURE__*/React.createElement("h1", null, isComplete ? "Complementar informações da feira" : "Cadastrar feira rapidamente"), /*#__PURE__*/React.createElement("p", null, "Ajude a manter a base viva com dados simples, \xFAteis e f\xE1ceis de validar."))), isComplete ? /*#__PURE__*/React.createElement(CompleteForm, null) : /*#__PURE__*/React.createElement(QuickForm, null));
+  }), "Voltar ao mapa"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Contribuir"), /*#__PURE__*/React.createElement("h1", null, isComplete ? "Complementar informações da feira" : "Cadastrar feira rapidamente"), /*#__PURE__*/React.createElement("p", null, "Ajude a manter a base viva com dados simples, \xFAteis e f\xE1ceis de validar."))), isComplete ? /*#__PURE__*/React.createElement(CompleteForm, {
+    onSubmit: event => handleContributionSubmit(event, "completa")
+  }) : /*#__PURE__*/React.createElement(QuickForm, {
+    onSubmit: event => handleContributionSubmit(event, "rápida")
+  }));
 }
-function QuickForm() {
+function QuickForm({
+  onSubmit
+}) {
   return /*#__PURE__*/React.createElement("form", {
-    className: "simple-form"
+    className: "simple-form",
+    onSubmit: onSubmit
   }, /*#__PURE__*/React.createElement(FormField, {
-    label: "Nome da feira"
+    label: "Nome da feira",
+    required: true
   }), /*#__PURE__*/React.createElement(FormField, {
     label: "Onde fica?",
-    help: "Rua, bairro ou ponto de refer\xEAncia."
+    help: "Rua, bairro ou ponto de refer\xEAncia.",
+    required: true
   }), /*#__PURE__*/React.createElement(FormField, {
-    label: "Cidade e estado"
+    label: "Cidade e estado",
+    required: true
   }), /*#__PURE__*/React.createElement(ChoiceGroup, {
     label: "Dias em que acontece",
     options: [...weekDays, "Não sei"]
@@ -479,26 +524,33 @@ function QuickForm() {
     textarea: true
   }), /*#__PURE__*/React.createElement("button", {
     className: "form-submit",
-    type: "button"
+    type: "submit"
   }, /*#__PURE__*/React.createElement(Icon, {
     type: "check"
-  }), "Enviar cadastro"));
+  }), "Enviar contribui\xE7\xE3o"));
 }
-function CompleteForm() {
+function CompleteForm({
+  onSubmit
+}) {
   return /*#__PURE__*/React.createElement("form", {
-    className: "simple-form wide"
+    className: "simple-form wide",
+    onSubmit: onSubmit
   }, /*#__PURE__*/React.createElement(FormField, {
-    label: "Nome da feira"
+    label: "Nome da feira",
+    required: true
   }), /*#__PURE__*/React.createElement(FormField, {
-    label: "Endere\xE7o completo"
+    label: "Endere\xE7o completo",
+    required: true
   }), /*#__PURE__*/React.createElement("div", {
     className: "form-grid"
   }, /*#__PURE__*/React.createElement(FormField, {
     label: "Bairro"
   }), /*#__PURE__*/React.createElement(FormField, {
-    label: "Cidade"
+    label: "Cidade",
+    required: true
   }), /*#__PURE__*/React.createElement(FormField, {
-    label: "Estado"
+    label: "Estado",
+    required: true
   })), /*#__PURE__*/React.createElement(ChoiceGroup, {
     label: "Dias em que acontece",
     options: weekDays
@@ -518,29 +570,36 @@ function CompleteForm() {
     label: "Seu contato"
   }), /*#__PURE__*/React.createElement("button", {
     className: "form-submit",
-    type: "button"
+    type: "submit"
   }, /*#__PURE__*/React.createElement(Icon, {
     type: "check"
-  }), "Enviar complemento"));
+  }), "Enviar contribui\xE7\xE3o"));
 }
 function FormField({
   label,
   help,
   placeholder,
-  textarea
+  textarea,
+  required
 }) {
+  const name = slug(label);
   return /*#__PURE__*/React.createElement("label", {
     className: "form-field"
   }, /*#__PURE__*/React.createElement("span", null, label), help && /*#__PURE__*/React.createElement("small", null, help), textarea ? /*#__PURE__*/React.createElement("textarea", {
-    rows: "4"
+    name: name,
+    rows: "4",
+    required: required
   }) : /*#__PURE__*/React.createElement("input", {
-    placeholder: placeholder
+    name: name,
+    placeholder: placeholder,
+    required: required
   }));
 }
 function ChoiceGroup({
   label,
   options
 }) {
+  const name = slug(label);
   return /*#__PURE__*/React.createElement("fieldset", {
     className: "choice-field"
   }, /*#__PURE__*/React.createElement("legend", null, label), /*#__PURE__*/React.createElement("div", {
@@ -550,6 +609,7 @@ function ChoiceGroup({
     className: "choice"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
+    name: name,
     value: option
   }), /*#__PURE__*/React.createElement("span", null, option)))));
 }

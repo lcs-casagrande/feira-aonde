@@ -358,6 +358,35 @@ function FairDetails({ fair, onChangePage }) {
 
 function ContributionPage({ page, onChangePage }) {
   const isComplete = page === "complete";
+  const [sentContribution, setSentContribution] = useState(null);
+
+  function handleContributionSubmit(event, type) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const filledFields = Array.from(formData.entries()).filter(([, value]) => String(value).trim() !== "").length;
+    setSentContribution({ type, filledFields });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  if (sentContribution) {
+    return (
+      <section className="contribution-screen">
+        <div className="success-panel">
+          <div className="success-icon">✓</div>
+          <span>Contribuição enviada</span>
+          <h1>Obrigado por ajudar o Feira Perto.</h1>
+          <p>
+            Recebemos {sentContribution.filledFields} informações. Elas ficam como contribuição pendente para revisão antes de entrar na base pública.
+          </p>
+          <div className="success-actions">
+            <button type="button" onClick={() => onChangePage("map")}><Icon type="map" />Voltar ao mapa</button>
+            <button type="button" onClick={() => setSentContribution(null)}><Icon type="plus" />Enviar outra</button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="contribution-screen">
       <header className="contribution-header">
@@ -369,35 +398,39 @@ function ContributionPage({ page, onChangePage }) {
         </div>
       </header>
 
-      {isComplete ? <CompleteForm /> : <QuickForm />}
+      {isComplete ? (
+        <CompleteForm onSubmit={(event) => handleContributionSubmit(event, "completa")} />
+      ) : (
+        <QuickForm onSubmit={(event) => handleContributionSubmit(event, "rápida")} />
+      )}
     </section>
   );
 }
 
-function QuickForm() {
+function QuickForm({ onSubmit }) {
   return (
-    <form className="simple-form">
-      <FormField label="Nome da feira" />
-      <FormField label="Onde fica?" help="Rua, bairro ou ponto de referência." />
-      <FormField label="Cidade e estado" />
+    <form className="simple-form" onSubmit={onSubmit}>
+      <FormField label="Nome da feira" required />
+      <FormField label="Onde fica?" help="Rua, bairro ou ponto de referência." required />
+      <FormField label="Cidade e estado" required />
       <ChoiceGroup label="Dias em que acontece" options={[...weekDays, "Não sei"]} />
       <FormField label="Horário de funcionamento" placeholder="Das 7h às 13h" />
       <ChoiceGroup label="Tipo de feira" options={["Feira livre tradicional", "Feira orgânica", "Feira gastronômica", "Feira noturna", "Outra"]} />
       <FormField label="Comentário rápido" textarea />
-      <button className="form-submit" type="button"><Icon type="check" />Enviar cadastro</button>
+      <button className="form-submit" type="submit"><Icon type="check" />Enviar contribuição</button>
     </form>
   );
 }
 
-function CompleteForm() {
+function CompleteForm({ onSubmit }) {
   return (
-    <form className="simple-form wide">
-      <FormField label="Nome da feira" />
-      <FormField label="Endereço completo" />
+    <form className="simple-form wide" onSubmit={onSubmit}>
+      <FormField label="Nome da feira" required />
+      <FormField label="Endereço completo" required />
       <div className="form-grid">
         <FormField label="Bairro" />
-        <FormField label="Cidade" />
-        <FormField label="Estado" />
+        <FormField label="Cidade" required />
+        <FormField label="Estado" required />
       </div>
       <ChoiceGroup label="Dias em que acontece" options={weekDays} />
       <div className="form-grid">
@@ -407,29 +440,35 @@ function CompleteForm() {
       <ChoiceGroup label="Produtos vendidos" options={["Frutas", "Verduras", "Peixes", "Pastel", "Caldo de cana", "Flores", "Artesanato", "Comida pronta"]} />
       <FormField label="O que uma pessoa precisa saber antes de ir?" textarea />
       <FormField label="Seu contato" />
-      <button className="form-submit" type="button"><Icon type="check" />Enviar complemento</button>
+      <button className="form-submit" type="submit"><Icon type="check" />Enviar contribuição</button>
     </form>
   );
 }
 
-function FormField({ label, help, placeholder, textarea }) {
+function FormField({ label, help, placeholder, textarea, required }) {
+  const name = slug(label);
   return (
     <label className="form-field">
       <span>{label}</span>
       {help && <small>{help}</small>}
-      {textarea ? <textarea rows="4" /> : <input placeholder={placeholder} />}
+      {textarea ? (
+        <textarea name={name} rows="4" required={required} />
+      ) : (
+        <input name={name} placeholder={placeholder} required={required} />
+      )}
     </label>
   );
 }
 
 function ChoiceGroup({ label, options }) {
+  const name = slug(label);
   return (
     <fieldset className="choice-field">
       <legend>{label}</legend>
       <div className="choice-grid">
         {options.map((option) => (
           <label key={option} className="choice">
-            <input type="checkbox" value={option} />
+            <input type="checkbox" name={name} value={option} />
             <span>{option}</span>
           </label>
         ))}
