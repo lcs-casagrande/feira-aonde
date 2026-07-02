@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Filosofia dos Dados | Comparar A&ccedil;&otilde;es</title>
+  <style>
+    :root {
+      --bg: #040f24;
+      --shell: #06142b;
+      --sidebar: #061326;
+      --panel: #071a35;
+      --panel-soft: #081e3b;
+      --line: #133258;
+      --line-soft: #102a48;
+      --white: #edf4ff;
+      --muted: #97a8c4;
+      --blue: #249eff;
+      --cyan: #21c4ee;
+      --orange: #ff8d19;
+      --gold: #dfad46;
+      --success: #22c58b;
+      --negative: #26b4ee;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--white);
+      background: var(--bg);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+    button, select { font: inherit; }
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 218px minmax(0, 1fr);
+      background:
+        radial-gradient(circle at 88% 8%, rgba(22,93,184,.11), transparent 24rem),
+        linear-gradient(180deg, #050f22 0%, #06142c 100%);
+    }
+    .sidebar {
+      min-height: 100vh;
+      border-right: 1px solid var(--line-soft);
+      background: linear-gradient(180deg, #061224, #06162e);
+      padding: 28px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 750;
+      line-height: 1.12;
+      font-size: 15px;
+    }
+    .brand-symbol {
+      position: relative;
+      width: 48px;
+      height: 44px;
+      overflow: hidden;
+    }
+    .brand-stripe {
+      position: absolute;
+      right: 2px;
+      width: 45px;
+      border-radius: 30px 2px 30px 2px;
+      transform: skewX(-28deg) rotate(-18deg);
+    }
+    .brand-stripe.one { top: 5px; height: 10px; background: linear-gradient(90deg, #ffc434, #ff8414); }
+    .brand-stripe.two { top: 16px; width: 43px; height: 10px; background: linear-gradient(90deg, #25c6f0, #1488dd); }
+    .brand-stripe.three { top: 27px; width: 38px; height: 9px; background: linear-gradient(90deg, #2872d0, #123a92); }
+    nav { display: grid; gap: 7px; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-height: 42px;
+      padding: 0 12px;
+      color: #bdc9de;
+      border-radius: 8px;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    .nav-item:hover { color: #e2eefc; background: rgba(9, 37, 75, .45); }
+    .nav-item.active {
+      color: #64bdff;
+      background: #062651;
+    }
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      color: currentColor;
+      font-size: 16px;
+    }
+    .nav-section {
+      color: #6d82a2;
+      padding: 13px 12px 3px;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .help {
+      margin-top: auto;
+      min-height: 133px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      padding: 16px 13px;
+      background:
+        linear-gradient(145deg, transparent 52%, rgba(255,141,25,.25) 53%, transparent 67%),
+        linear-gradient(155deg, transparent 58%, rgba(36,158,255,.28) 59%, transparent 73%),
+        #081e3d;
+      color: #b8c9e1;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .main {
+      min-width: 0;
+      padding: 22px 24px 16px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0 0 7px;
+      font-size: 27px;
+      line-height: 1.15;
+      font-weight: 720;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin: 0;
+      color: #c0cce0;
+      font-size: 14px;
+    }
+    .account {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .icon-button, .profile {
+      height: 41px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: #c9d6ea;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+    }
+    .icon-button { width: 41px; font-size: 18px; }
+    .profile {
+      width: 82px;
+      display: flex;
+      justify-content: center;
+      gap: 9px;
+      color: #54b8ff;
+    }
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #09264e;
+      border: 1px solid #103e77;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(7,25,51,.98), rgba(6,22,44,.98));
+    }
+    .filters {
+      padding: 18px 20px 15px;
+      display: grid;
+      grid-template-columns: minmax(520px, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+    }
+    .field-label {
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 9px;
+    }
+    .select-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    select {
+      width: 100%;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid #16365d;
+      border-radius: 7px;
+      background: #071b38;
+      color: #e1ecfc;
+      outline: none;
+    }
+    select:focus { border-color: var(--blue); }
+    .note {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 10px;
+    }
+    .clear {
+      height: 42px;
+      border: 1px solid #154679;
+      border-radius: 7px;
+      color: #5bb6ff;
+      background: transparent;
+      padding: 0 17px;
+      cursor: pointer;
+    }
+    .clear:hover { background: #092346; }
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+      align-items: stretch;
+    }
+    .summary-panel {
+      padding: 20px 16px;
+      background: linear-gradient(180deg, #082651, #082246);
+      display: flex;
+      flex-direction: column;
+      order: 2;
+    }
+    .summary-text {
+      font-size: 14px;
+      line-height: 1.55;
+      color: #d7e4f7;
+      margin: 0 0 18px;
+    }
+    .summary-text strong { color: var(--orange); }
+    .summary-text .blue { color: var(--cyan); }
+    .summary-title {
+      color: #a9bcda;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin: 0 0 13px;
+    }
+    .insights { display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 9px; }
+    .highlight-card {
+      border: 1px solid #215185;
+      border-radius: 7px;
+      padding: 11px 10px;
+      display: grid;
+      grid-template-columns: 37px 1fr auto;
+      align-items: center;
+      gap: 9px;
+      background: rgba(8, 36, 72, .6);
+    }
+    .badge {
+      width: 37px;
+      height: 37px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 17px;
+      font-weight: 700;
+      background: var(--series);
+      color: #052047;
+    }
+    .highlight-label { color: #a7b9d5; font-size: 10px; margin-bottom: 4px; }
+    .highlight-ticker { color: #f1f6ff; font-size: 14px; font-weight: 700; }
+    .highlight-value { font-size: 17px; font-weight: 750; color: var(--series); white-space: nowrap; }
+    .disclaimer {
+      margin-top: auto;
+      padding-top: 22px;
+      color: #b9c8df;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .visual-column { display: grid; gap: 12px; min-width: 0; order: 1; }
+    .chart-panel { padding: 17px 18px 13px; }
+    .chart-panel:fullscreen,
+    .chart-panel.chart-expanded {
+      padding: 24px;
+      background: #06142c;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .chart-panel.chart-expanded {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      border-radius: 0;
+    }
+    .chart-panel:fullscreen .plot,
+    .chart-panel.chart-expanded .plot { height: auto; min-height: 0; }
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .chart-title {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px;
+      font-size: 13px;
+      color: #cfdbec;
+    }
+    .legend-row { display: flex; align-items: center; gap: 7px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .chart-actions { display: flex; align-items: center; gap: 8px; }
+    .pill, .fullscreen-button {
+      height: 34px;
+      min-width: 58px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      border: 1px solid var(--line-soft);
+      background: transparent;
+    }
+    .fullscreen-button {
+      min-width: 42px;
+      border-radius: 7px;
+      color: #55baff;
+      cursor: pointer;
+      padding: 0 11px;
+    }
+    .fullscreen-button:hover { background: #092751; border-color: #175692; }
+    .pill:first-child { border-radius: 7px 0 0 7px; }
+    .pill:last-child { border-radius: 0 7px 7px 0; }
+    .pill.active {
+      color: #55baff;
+      border-color: #175692;
+      background: #092751;
+    }
+    .plot { height: 520px; min-height: 420px; }
+    svg { width: 100%; height: 100%; display: block; }
+    .bottom {
+      display: grid;
+      grid-template-columns: 1fr 225px;
+      padding: 18px;
+      gap: 20px;
+    }
+    .bottom-title {
+      margin: 0 0 15px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .dividend-bars { display: grid; gap: 15px; }
+    .dividend-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 60px;
+      gap: 14px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .track {
+      height: 10px;
+      background: #102743;
+      border-radius: 9px;
+      overflow: hidden;
+    }
+    .fill { height: 100%; border-radius: 9px; background: var(--series); }
+    .difference {
+      align-self: center;
+      border: 1px solid #17375c;
+      border-radius: 7px;
+      padding: 15px;
+      color: #b8c9df;
+      font-size: 12px;
+      line-height: 1.45;
+      background: #091d38;
+    }
+    .difference strong { display: block; color: var(--orange); font-size: 22px; margin: 4px 0; }
+    .table-panel {
+      margin-top: 12px;
+      padding: 17px 18px;
+    }
+    .table-panel summary {
+      cursor: pointer;
+      color: #d6e4f7;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .table-scroll { overflow-x: auto; margin-top: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+      text-transform: uppercase;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #102843;
+      color: #dae5f5;
+    }
+    th:nth-child(n+3), td:nth-child(n+3) { text-align: right; }
+    tr.highlight td:first-child { color: var(--gold); }
+    footer {
+      text-align: center;
+      color: #7287a6;
+      font-size: 11px;
+      margin-top: 14px;
+    }
+    @media (max-width: 1080px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { min-height: 0; display: none; }
+      .filters, .analysis-grid, .bottom, .select-grid, .insights { grid-template-columns: 1fr; }
+      .plot { height: 380px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-symbol" aria-hidden="true">
+          <span class="brand-stripe one"></span><span class="brand-stripe two"></span><span class="brand-stripe three"></span>
+        </span>
+        <span>FILOSOFIA<br>DOS DADOS</span>
+      </div>
+      <nav>
+        <a class="nav-item" href="evolucao_acoes.html"><span class="nav-icon">&#8599;</span>A&ccedil;&otilde;es</a>
+        <a class="nav-item active" href="painel_acoes_yield_cost.html"><span class="nav-icon">&#8644;</span>Comparar a&ccedil;&otilde;es</a>
+        <div class="nav-item">Carteira</div>
+        <a class="nav-item" href="proventos.html"><span class="nav-icon">$</span>Proventos</a>
+        <a class="nav-item" href="funil_acoes.html"><span class="nav-icon">&#9661;</span>Funil de a&ccedil;&otilde;es</a>
+        <a class="nav-item" href="tabela_dados.html"><span class="nav-icon">&#9638;</span>Tabela de dados</a>
+        <div class="nav-item">Favoritos</div>
+        <div class="nav-section">Relat&oacute;rios</div>
+        <a class="nav-item" href="relatorio_yield_12m.html"><span class="nav-icon">&#9638;</span>Yield 12M</a>
+      </nav>
+      <div class="help">D&uacute;vidas ou sugest&otilde;es?<br><strong>Fale conosco</strong></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Varia&ccedil;&atilde;o de pre&ccedil;o por a&ccedil;&atilde;o</h1>
+          <p class="subtitle">Compare at&eacute; tr&ecirc;s a&ccedil;&otilde;es entre o pre&ccedil;o de 12 meses atr&aacute;s e o pre&ccedil;o atual.</p>
+        </div>
+        <div class="account">
+          <button class="icon-button" aria-label="Modo visual">&#9790;</button>
+          <button class="icon-button" aria-label="Ajuda">?</button>
+          <div class="profile"><span class="avatar">FD</span><span>&#8964;</span></div>
+        </div>
+      </header>
+      <section class="panel filters">
+        <div>
+          <div class="field-label">Selecione at&eacute; tr&ecirc;s a&ccedil;&otilde;es</div>
+          <div class="select-grid">
+            <select id="stockA" aria-label="Primeira a&ccedil;&atilde;o"></select>
+            <select id="stockB" aria-label="Segunda a&ccedil;&atilde;o"></select>
+            <select id="stockC" aria-label="Terceira a&ccedil;&atilde;o"></select>
+          </div>
+          <div class="note">A compara&ccedil;&atilde;o exibe somente os pontos dispon&iacute;veis na base: in&iacute;cio e fim do per&iacute;odo de 12 meses.</div>
+        </div>
+        <button class="clear" id="resetButton" type="button">Limpar sele&ccedil;&atilde;o</button>
+      </section>
+      <section class="analysis-grid">
+        <div class="visual-column">
+          <section class="panel chart-panel">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">Evolu&ccedil;&atilde;o de pre&ccedil;o e rendimento</div>
+                <div class="legend" id="legend"></div>
+              </div>
+              <div class="chart-actions">
+                <span class="pill active">Gr&aacute;fico</span>
+                <button class="fullscreen-button" id="fullscreenChart" type="button" title="Tela cheia" aria-label="Tela cheia">&#9974;</button>
+              </div>
+            </div>
+            <div class="plot"><svg id="chart" viewBox="0 0 1120 340" role="img" aria-label="Compara&ccedil;&atilde;o de pre&ccedil;o"></svg></div>
+          </section>
+          <section class="panel bottom">
+            <div>
+              <p class="bottom-title">Dividendos recebidos nos &uacute;ltimos 12 meses</p>
+              <div class="dividend-bars" id="dividendBars"></div>
+            </div>
+            <div class="difference" id="difference"></div>
+          </section>
+        </div>
+        <aside class="panel summary-panel">
+          <p class="summary-title">Resumo da compara&ccedil;&atilde;o</p>
+          <p class="summary-text" id="summaryText"></p>
+          <p class="summary-title">Destaques do per&iacute;odo<br><small>(12 meses)</small></p>
+          <div class="insights" id="insights"></div>
+          <div class="disclaimer">Rentabilidade passada n&atilde;o &eacute; garantia de rentabilidade futura.</div>
+        </aside>
+      </section>
+      <details class="panel table-panel">
+        <summary>Ver tabela completa das a&ccedil;&otilde;es</summary>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th></th><th>A&ccedil;&atilde;o</th><th>Pre&ccedil;o 12m</th><th>Pre&ccedil;o atual</th><th>Varia&ccedil;&atilde;o</th><th>Dividendos 12m</th><th>DY</th><th>Yield cost</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </details>
+      <footer>Dados coletados em 20/05/2026 &nbsp; | &nbsp; Fonte dos pre&ccedil;os e dividendos: Yahoo Finance</footer>
+    </main>
+  </div>
+  <script>
+    const rows = [{"ticker":"SCAR3","empresa":"S\u00e3o Carlos","preco_12m":17.799999237060547,"data_12m":"2025-05-20","preco_atual":13.640000343322754,"data_atual":"2026-05-20","div_12m":7.100797,"variacao":-23.3707813036107,"dy":52.05862772192732,"yield_cost":39.89211968737483},{"ticker":"RIAA3","empresa":"Riachuelo","preco_12m":9.710000038146973,"data_12m":"2026-01-28","preco_atual":9.069999694824219,"data_atual":"2026-05-20","div_12m":0.179354,"variacao":-6.591146661260872,"dy":1.9774421834032485,"yield_cost":1.8471060689535013},{"ticker":"CGAS3","empresa":"Comg\u00e1s","preco_12m":125.54000091552734,"data_12m":"2025-05-20","preco_atual":121.0,"data_atual":"2026-05-20","div_12m":8.124895,"variacao":-3.616377953177008,"dy":6.7147892561983475,"yield_cost":6.471957097934893},{"ticker":"TKNO4","empresa":"Tekno","preco_12m":81.0,"data_12m":"2025-05-20","preco_atual":216.0,"data_atual":"2026-05-19","div_12m":16.391882,"variacao":166.66666666666666,"dy":7.588834259259258,"yield_cost":20.23689135802469},{"ticker":"PETR4","empresa":"Petrobr\u00e1s","preco_12m":32.11000061035156,"data_12m":"2025-05-20","preco_atual":44.599998474121094,"data_atual":"2026-05-20","div_12m":3.1759370000000002,"variacao":38.8975323150353,"dy":7.1209352212036965,"yield_cost":9.890803300004135},{"ticker":"ITUB4","empresa":"Banco Ita\u00fa","preco_12m":37.18446731567383,"data_12m":"2025-05-20","preco_atual":39.66999816894531,"data_atual":"2026-05-20","div_12m":3.409716,"variacao":6.684325560376636,"dy":8.595200800057542,"yield_cost":9.169732004101487},{"ticker":"BBAS3","empresa":"Banco do Brasil","preco_12m":25.5,"data_12m":"2025-05-20","preco_atual":20.700000762939453,"data_atual":"2026-05-20","div_12m":0.833124,"variacao":-18.823526419845283,"dy":4.024753474848153,"yield_cost":3.2671529411764704},{"ticker":"VALE3","empresa":"Vale","preco_12m":55.349998474121094,"data_12m":"2025-05-20","preco_atual":82.0,"data_atual":"2026-05-20","div_12m":5.477157999999999,"variacao":48.148152232269936,"dy":6.679460975609755,"yield_cost":9.895498014441403},{"ticker":"VBBR3","empresa":"Vibra Energia","preco_12m":18.261560440063477,"data_12m":"2025-05-20","preco_atual":33.34000015258789,"data_atual":"2026-05-20","div_12m":1.093444,"variacao":82.56928405441349,"dy":3.2796760497768793,"yield_cost":5.987681083381719},{"ticker":"SANB11","empresa":"Banco Santander","preco_12m":30.530000686645508,"data_12m":"2025-05-20","preco_atual":27.450000762939453,"data_atual":"2026-05-20","div_12m":2.308437,"variacao":-10.088437125562578,"dy":8.409606323642242,"yield_cost":7.561208477174261},{"ticker":"KLBN4","empresa":"Klabin","preco_12m":3.792078971862793,"data_12m":"2025-05-20","preco_atual":3.3299999237060547,"data_atual":"2026-05-20","div_12m":0.281916,"variacao":-12.185375135522293,"dy":8.46594613991004,"yield_cost":7.434338843990732},{"ticker":"BBSE3","empresa":"BB Seguridade","preco_12m":38.38999938964844,"data_12m":"2025-05-20","preco_atual":34.709999084472656,"data_atual":"2026-05-20","div_12m":4.548902,"variacao":-9.58583059047421,"dy":13.105451224384874,"yield_cost":11.849184871898112},{"ticker":"TAEE11","empresa":"Taesa","preco_12m":35.869998931884766,"data_12m":"2025-05-20","preco_atual":38.560001373291016,"data_atual":"2026-05-20","div_12m":3.275389,"variacao":7.499310068323184,"dy":8.49426577632005,"yield_cost":9.13127710491375},{"ticker":"CMIG4","empresa":"Cemig","preco_12m":10.699999809265137,"data_12m":"2025-05-20","preco_atual":11.529999732971191,"data_atual":"2026-05-20","div_12m":1.269037,"variacao":7.757008771040885,"dy":11.00639227571759,"yield_cost":11.86015908992017},{"ticker":"ABCB4","empresa":"Banco ABC Brasil","preco_12m":22.030000686645508,"data_12m":"2025-05-20","preco_atual":24.389999389648438,"data_atual":"2026-05-20","div_12m":2.6033790000000003,"variacao":10.712658327031054,"dy":10.673960906718687,"yield_cost":11.817425868616326},{"ticker":"WEGE3","empresa":"WEG","preco_12m":44.529998779296875,"data_12m":"2025-05-20","preco_atual":42.58000183105469,"data_atual":"2026-05-20","div_12m":2.167354,"variacao":-4.379063556473284,"dy":5.090074933766895,"yield_cost":4.867177317345128}];
+    const highlights = new Set(["SCAR3", "TKNO4", "BBAS3", "VALE3"]);
+    const seriesColors = ["#249eff", "#ff8d19", "#22c58b"];
+    const defaults = ["SCAR3", "", ""];
+    const stockA = document.getElementById("stockA");
+    const stockB = document.getElementById("stockB");
+    const stockC = document.getElementById("stockC");
+
+    const money = value => value == null ? "-" : value.toLocaleString("pt-BR", {style: "currency", currency: "BRL"});
+    const percent = value => value == null ? "-" : value.toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + "%";
+    const initials = name => name.split(" ").slice(0, 2).map(word => word[0]).join("").toUpperCase();
+    const get = ticker => rows.find(row => row.ticker === ticker);
+
+    function options(selected) {
+      const listed = rows;
+      const destacados = listed.filter(row => highlights.has(row.ticker));
+      const others = listed.filter(row => !highlights.has(row.ticker));
+      const option = row => `<option value="${row.ticker}" ${selected === row.ticker ? "selected" : ""}>${row.ticker} - ${row.empresa}</option>`;
+      let html = `<option value="" ${selected === "" ? "selected" : ""}>Nenhuma</option>`;
+      html += `<optgroup label="Destaques">${destacados.map(option).join("")}</optgroup>`;
+      html += `<optgroup label="Demais ações">${others.map(option).join("")}</optgroup>`;
+      return html;
+    }
+
+    function configureSelects(first = defaults[0], second = defaults[1], third = defaults[2]) {
+      stockA.innerHTML = options(first);
+      stockB.innerHTML = options(second);
+      stockC.innerHTML = options(third);
+      stockA.value = first;
+      stockB.value = second;
+      stockC.value = third;
+    }
+
+    function selectedRows() {
+      const tickers = [stockA.value, stockB.value, stockC.value].filter(Boolean);
+      return [...new Set(tickers)].map(get).filter(Boolean);
+    }
+
+    function renderSummary(selected) {
+      if (!selected.length) {
+        document.getElementById("summaryText").innerHTML = "Selecione ao menos uma ação para iniciar a análise.";
+        document.getElementById("insights").innerHTML = "";
+        document.getElementById("difference").innerHTML = "<span>Nenhuma ação selecionada</span>";
+        return;
+      }
+      if (selected.length === 1) {
+        const [only] = selected;
+        const highlightsForView = [
+          {label: "Valorização em 12 meses", row: only, value: percent(only.variacao), symbol: "&#8599;", color: "#ff8d19"},
+          {label: "Dividend yield", row: only, value: percent(only.dy), symbol: "$", color: "#21c4ee"},
+          {label: "Dividendos recebidos", row: only, value: money(only.div_12m), symbol: "&#9638;", color: "#21c4ee"},
+          {label: "Preço atual", row: only, value: money(only.preco_atual), symbol: "&#9646;", color: "#ff8d19"}
+        ];
+        document.getElementById("summaryText").innerHTML =
+          `Análise individual de <strong>${only.ticker}</strong>: a ação ${only.variacao >= 0 ? "valorizou" : "caiu"} ${percent(Math.abs(only.variacao))} em 12 meses, com dividend yield de <span class="blue">${percent(only.dy)}</span>.`;
+        document.getElementById("insights").innerHTML = highlightsForView.map(item =>
+          `<div class="highlight-card" style="--series:${item.color}">
+            <span class="badge">${item.symbol}</span>
+            <span><div class="highlight-label">${item.label}</div><div class="highlight-ticker">${item.row.ticker}</div></span>
+            <strong class="highlight-value">${item.value}</strong>
+          </div>`
+        ).join("");
+        document.getElementById("difference").innerHTML =
+          `<span>Dividendos em 12 meses</span><strong>${money(only.div_12m)}</strong><span>recebidos por <b>${only.ticker}</b></span>`;
+        return;
+      }
+      const winnerPrice = selected.reduce((best, row) => row.variacao > best.variacao ? row : best, selected[0]);
+      const otherPrice = selected.reduce((worst, row) => row.variacao < worst.variacao ? row : worst, selected[0]);
+      const winnerYield = selected.reduce((best, row) => row.dy > best.dy ? row : best, selected[0]);
+      const winnerDividend = selected.reduce((best, row) => row.div_12m > best.div_12m ? row : best, selected[0]);
+      const higherPrice = selected.reduce((best, row) => row.preco_atual > best.preco_atual ? row : best, selected[0]);
+      const lowerPrice = selected.reduce((worst, row) => row.preco_atual < worst.preco_atual ? row : worst, selected[0]);
+      const currentPriceGap = (higherPrice.preco_atual / lowerPrice.preco_atual - 1) * 100;
+      const highlightsForView = [
+        {label: "Maior valorização", row: winnerPrice, value: percent(winnerPrice.variacao), symbol: "&#8599;", color: "#ff8d19"},
+        {label: "Maior dividend yield", row: winnerYield, value: percent(winnerYield.dy), symbol: "$", color: "#21c4ee"},
+        {label: "Mais dividendos recebidos", row: winnerDividend, value: money(winnerDividend.div_12m), symbol: "&#9638;", color: "#21c4ee"},
+        {label: "Diferença de preço atual", row: higherPrice, value: `${percent(currentPriceGap)} acima`, symbol: "&#9646;", color: "#ff8d19"}
+      ];
+      document.getElementById("summaryText").innerHTML =
+        `No período de 12 meses, a <strong>${winnerPrice.ticker}</strong> teve a maior valorização do grupo, enquanto a <span class="blue">${winnerYield.ticker}</span> apresentou maior rendimento com dividendos.`;
+      document.getElementById("insights").innerHTML = highlightsForView.map(item =>
+        `<div class="highlight-card" style="--series:${item.color}">
+          <span class="badge">${item.symbol}</span>
+          <span><div class="highlight-label">${item.label}</div><div class="highlight-ticker">${item.row.ticker}</div></span>
+          <strong class="highlight-value">${item.value}</strong>
+        </div>`
+      ).join("");
+      document.getElementById("difference").innerHTML =
+        `<span>Maior dividendo do grupo</span><strong>${money(winnerDividend.div_12m)}</strong><span>recebidos pela <b>${winnerDividend.ticker}</b></span>`;
+    }
+
+    function renderChart(selected) {
+      const svg = document.getElementById("chart");
+      if (!selected.length) {
+        svg.innerHTML = `<text x="560" y="170" text-anchor="middle" fill="#8fa2bf" font-size="16">Selecione ao menos uma ação</text>`;
+        document.getElementById("legend").innerHTML = "";
+        return;
+      }
+      const xStart = 116;
+      const xEnd = 842;
+      const plotTop = 32;
+      const plotBottom = 263;
+      const values = selected.flatMap(row => [row.preco_12m, row.preco_atual]);
+      const max = Math.ceil(Math.max(...values) / 25) * 25 || 25;
+      const y = value => plotBottom - (value / max) * (plotBottom - plotTop);
+      const grid = [0, .25, .5, .75, 1].map(step => {
+        const value = max * step;
+        const py = y(value);
+        return `<line x1="${xStart}" y1="${py}" x2="${xEnd}" y2="${py}" stroke="#102b4b" stroke-width="1"/>`;
+      }).join("");
+      const cardSlots = selected
+        .map(row => ({ticker: row.ticker, y: y(row.preco_atual)}))
+        .sort((a, b) => a.y - b.y);
+      const minCardGap = 82;
+      cardSlots.forEach((slot, index) => {
+        const previous = cardSlots[index - 1];
+        if (previous && slot.y - previous.y < minCardGap) slot.y = previous.y + minCardGap;
+      });
+      const overflow = cardSlots.length ? cardSlots[cardSlots.length - 1].y + 37 - plotBottom : 0;
+      if (overflow > 0) cardSlots.forEach(slot => slot.y -= overflow);
+      cardSlots.forEach(slot => {
+        if (slot.y - 32 < plotTop) slot.y = plotTop + 32;
+      });
+      const cardY = Object.fromEntries(cardSlots.map(slot => [slot.ticker, slot.y]));
+      const paths = selected.map((row, index) => {
+        const color = seriesColors[index];
+        const startY = y(row.preco_12m);
+        const endY = y(row.preco_atual);
+        const fill = index === 0 ? "rgba(36,158,255,.09)" : index === 1 ? "rgba(255,141,25,.10)" : "rgba(34,197,139,.08)";
+        const midpointX = xStart + (xEnd - xStart) * .52;
+        const midpointY = startY + (endY - startY) * .52 - 11;
+        const boxY = cardY[row.ticker] ?? endY;
+        return `<path d="M${xStart} ${startY} L${xEnd} ${endY} L${xEnd} ${plotBottom} L${xStart} ${plotBottom} Z" fill="${fill}"/>
+          <line x1="${xStart}" y1="${startY}" x2="${xEnd}" y2="${endY}" stroke="${color}" stroke-width="2.5"/>
+          <circle cx="${xStart}" cy="${startY}" r="6" fill="${color}" stroke="#d8efff" stroke-width="2"/>
+          <circle cx="${xEnd}" cy="${endY}" r="6" fill="${color}" stroke="#d8efff" stroke-width="2"/>
+          <text x="${xStart}" y="${startY - 15}" text-anchor="middle" fill="#eff6ff" font-size="12" font-weight="700">${money(row.preco_12m)}</text>
+          <text x="${midpointX}" y="${midpointY}" text-anchor="middle" fill="${color}" font-size="11" font-weight="700">${row.ticker} ${percent(row.variacao)}</text>
+          <text x="${xEnd}" y="${endY - 15}" text-anchor="middle" fill="#eff6ff" font-size="12" font-weight="700">${money(row.preco_atual)}</text>
+          <rect x="902" y="${boxY - 32}" width="185" height="69" rx="7" fill="#081c38" stroke="${color}" stroke-opacity=".8"/>
+          <text x="916" y="${boxY - 13}" fill="${color}" font-size="12" font-weight="700">${row.ticker}</text>
+          <text x="916" y="${boxY + 5}" fill="#d9e7f8" font-size="11">${row.variacao >= 0 ? "valorizou" : "caiu"} ${percent(Math.abs(row.variacao))}</text>
+          <text x="916" y="${boxY + 22}" fill="#d9e7f8" font-size="11">DY ${percent(row.dy)}</text>`;
+      }).join("");
+      const firstDate = selected[0].data_12m.slice(0, 7).split("-").reverse().join("/");
+      const lastDate = selected[0].data_atual.slice(0, 7).split("-").reverse().join("/");
+      svg.innerHTML = `${grid}
+        <line x1="${xStart}" y1="${plotTop}" x2="${xStart}" y2="${plotBottom}" stroke="#5d7ca2" stroke-dasharray="3 4"/>
+        <line x1="${xEnd}" y1="${plotTop}" x2="${xEnd}" y2="${plotBottom}" stroke="#5d7ca2" stroke-dasharray="3 4"/>
+        ${paths}
+        <text x="${xStart}" y="293" text-anchor="middle" fill="#d5e2f4" font-size="12" font-weight="700">Há 12 meses</text>
+        <text x="${xStart}" y="312" text-anchor="middle" fill="#8fa2bf" font-size="12">${firstDate}</text>
+        <text x="${xEnd}" y="293" text-anchor="middle" fill="#d5e2f4" font-size="12" font-weight="700">Fim do período</text>
+        <text x="${xEnd}" y="312" text-anchor="middle" fill="#8fa2bf" font-size="12">${lastDate}</text>`;
+      document.getElementById("legend").innerHTML = selected.map((row, index) =>
+        `<div class="legend-row"><span class="dot" style="background:${seriesColors[index]}"></span><strong>${row.ticker}</strong> - ${row.empresa}</div>`
+      ).join("");
+    }
+
+    function renderBottom(selected) {
+      if (!selected.length) {
+        document.getElementById("dividendBars").innerHTML = "";
+        return;
+      }
+      const maxDividend = Math.max(...selected.map(row => row.div_12m));
+      document.getElementById("dividendBars").innerHTML = selected.map((row, index) =>
+        `<div class="dividend-row" style="--series:${seriesColors[index]}"><div><span class="dot" style="background:${seriesColors[index]}"></span>&nbsp; ${row.ticker} - ${row.empresa}</div><div class="track"><div class="fill" style="width:${(row.div_12m / maxDividend * 100).toFixed(2)}%"></div></div><strong>${money(row.div_12m)}</strong></div>`
+      ).join("");
+    }
+
+    function renderTable() {
+      document.getElementById("tableBody").innerHTML = rows.map(row =>
+        `<tr class="${highlights.has(row.ticker) ? "highlight" : ""}"><td>${highlights.has(row.ticker) ? "Destaque" : ""}</td><td><strong>${row.ticker}</strong> - ${row.empresa}</td><td>${money(row.preco_12m)}</td><td>${money(row.preco_atual)}</td><td>${percent(row.variacao)}</td><td>${money(row.div_12m)}</td><td>${percent(row.dy)}</td><td>${percent(row.yield_cost)}</td></tr>`
+      ).join("");
+    }
+
+    function render() {
+      const selected = selectedRows();
+      renderSummary(selected);
+      renderChart(selected);
+      renderBottom(selected);
+    }
+
+    function toggleFullscreen() {
+      const panel = document.querySelector(".chart-panel");
+      const button = document.getElementById("fullscreenChart");
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.();
+        button.innerHTML = "&#9974;";
+        return;
+      }
+      if (panel.classList.contains("chart-expanded")) {
+        panel.classList.remove("chart-expanded");
+        button.innerHTML = "&#9974;";
+        return;
+      }
+      panel.requestFullscreen?.().catch(() => panel.classList.add("chart-expanded"));
+      window.setTimeout(() => {
+        if (!document.fullscreenElement) panel.classList.add("chart-expanded");
+        button.textContent = "Sair";
+      }, 120);
+    }
+
+    configureSelects();
+    renderTable();
+    render();
+    stockA.addEventListener("change", render);
+    stockB.addEventListener("change", render);
+    stockC.addEventListener("change", render);
+    document.getElementById("fullscreenChart").addEventListener("click", toggleFullscreen);
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement) document.querySelector(".chart-panel").classList.remove("chart-expanded");
+      document.getElementById("fullscreenChart").innerHTML = document.fullscreenElement ? "Sair" : "&#9974;";
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") document.querySelector(".chart-panel").classList.remove("chart-expanded");
+    });
+    document.getElementById("resetButton").addEventListener("click", () => {
+      configureSelects();
+      render();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Filosofia dos Dados | Evolu&ccedil;&atilde;o de A&ccedil;&otilde;es</title>
+  <style>
+    :root {
+      --bg:#040f24; --panel:#071a35; --line:#143457; --muted:#99acc9;
+      --white:#edf4ff; --blue:#249eff; --cyan:#21c4ee; --orange:#ff8d19;
+      --gold:#dfad46; --green:#22c58b;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; color:var(--white); background:var(--bg);
+      font-family:Inter, "Segoe UI", Arial, sans-serif; letter-spacing:0;
+    }
+    button, select, input { font:inherit; }
+    .app {
+      min-height:100vh; display:grid; grid-template-columns:218px minmax(0, 1fr);
+      background:radial-gradient(circle at 91% 4%, rgba(36,158,255,.1), transparent 28rem), #050f22;
+    }
+    .sidebar {
+      min-height:100vh; padding:28px 18px 18px; border-right:1px solid #102a48;
+      display:flex; flex-direction:column; gap:34px; background:linear-gradient(180deg,#061224,#06162e);
+    }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:750; line-height:1.12; font-size:15px; }
+    .brand-symbol { position:relative; width:48px; height:44px; overflow:hidden; }
+    .brand-stripe {
+      position:absolute; right:2px; width:45px; border-radius:30px 2px 30px 2px;
+      transform:skewX(-28deg) rotate(-18deg);
+    }
+    .brand-stripe.one { top:5px; height:10px; background:linear-gradient(90deg,#ffc434,#ff8414); }
+    .brand-stripe.two { top:16px; width:43px; height:10px; background:linear-gradient(90deg,#25c6f0,#1488dd); }
+    .brand-stripe.three { top:27px; width:38px; height:9px; background:linear-gradient(90deg,#2872d0,#123a92); }
+    nav { display:grid; gap:7px; }
+    .nav-item {
+      min-height:42px; padding:0 12px; border-radius:8px; display:flex; align-items:center; gap:13px;
+      font-size:14px; color:#bdc9de; text-decoration:none;
+    }
+    .nav-item:hover { color:#e2eefc; background:rgba(9,37,75,.45); }
+    .nav-item.active { color:#64bdff; background:#062651; }
+    .nav-icon { width:18px; text-align:center; font-size:16px; }
+    .nav-section { color:#6d82a2; padding:13px 12px 3px; font-size:11px; text-transform:uppercase; font-weight:700; }
+    .help {
+      margin-top:auto; padding:16px 13px; border:1px solid var(--line); border-radius:8px;
+      color:#b8c9e1; font-size:12px; line-height:1.55; background:#081e3d;
+    }
+    .main { min-width:0; padding:23px 24px 16px; }
+    .topbar { display:flex; justify-content:space-between; gap:16px; margin-bottom:20px; align-items:start; }
+    h1 { margin:0 0 7px; font-size:27px; font-weight:720; }
+    .subtitle { margin:0; color:#c0cce0; font-size:14px; }
+    .stamp { text-align:right; color:#8ea4c4; font-size:12px; line-height:1.6; }
+    .panel {
+      border:1px solid var(--line); border-radius:8px;
+      background:linear-gradient(180deg, rgba(7,25,51,.98), rgba(6,22,44,.98));
+    }
+    .filters {
+      display:grid; grid-template-columns:repeat(2, minmax(180px,1fr)) minmax(215px,1.18fr) 166px 166px auto;
+      gap:12px; align-items:end; padding:18px 20px;
+    }
+    .label { display:block; margin:0 0 8px; color:var(--muted); font-size:10px; text-transform:uppercase; font-weight:700; }
+    select, input {
+      width:100%; height:42px; padding:0 11px; border:1px solid #17385e; border-radius:7px;
+      background:#071b38; color:#e6eefc; outline:none;
+    }
+    select:focus, input:focus { border-color:var(--blue); }
+    .button {
+      height:42px; padding:0 16px; border:1px solid #185287; border-radius:7px;
+      background:#0a3971; color:#e5f2ff; cursor:pointer;
+    }
+    .method { grid-column:1 / -1; margin:0; color:#96aac8; font-size:11px; line-height:1.55; }
+    .cards { display:grid; grid-template-columns:repeat(4, minmax(170px,1fr)); gap:12px; margin:12px 0; }
+    .card { padding:14px 16px; min-height:91px; }
+    .card-label { margin:0 0 9px; color:#a7b9d6; text-transform:uppercase; font-size:10px; font-weight:700; }
+    .card-value { font-size:24px; color:var(--cyan); font-weight:750; }
+    .card-value.b { color:var(--orange); }
+    .card-detail { color:#96aac8; font-size:11px; margin-top:5px; }
+    .chart { padding:17px 18px 14px; }
+    .chart-head { display:flex; justify-content:space-between; gap:18px; align-items:start; margin-bottom:13px; }
+    .title { font-size:14px; font-weight:700; margin:0 0 11px; }
+    .legend { display:flex; flex-wrap:wrap; gap:18px; color:#bdcde2; font-size:12px; }
+    .legend-item { display:flex; align-items:center; gap:7px; }
+    .line { width:19px; height:3px; background:var(--series); border-radius:4px; }
+    .line.dashed { height:0; border-top:2px dashed var(--series); background:none; }
+    .badge {
+      padding:7px 10px; border:1px solid #183a60; border-radius:7px; color:#9bb2d0;
+      font-size:11px; text-align:right; line-height:1.5;
+    }
+    .plot { height:495px; min-height:400px; }
+    svg { display:block; width:100%; height:100%; }
+    .empty { height:100%; display:grid; place-items:center; color:#94a7c5; font-size:13px; }
+    footer { text-align:center; color:#7287a6; font-size:11px; margin-top:14px; }
+    @media (max-width:1240px) {
+      .filters { grid-template-columns:repeat(3,minmax(170px,1fr)); }
+      .cards { grid-template-columns:repeat(2,minmax(170px,1fr)); }
+    }
+    @media (max-width:880px) {
+      .app { grid-template-columns:1fr; } .sidebar { display:none; }
+      .filters, .cards { grid-template-columns:1fr; }
+      .plot { height:400px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-symbol" aria-hidden="true"><span class="brand-stripe one"></span><span class="brand-stripe two"></span><span class="brand-stripe three"></span></span>
+        <span>FILOSOFIA<br>DOS DADOS</span>
+      </div>
+      <nav>
+        <a class="nav-item active" href="evolucao_acoes.html"><span class="nav-icon">&#8599;</span>A&ccedil;&otilde;es</a>
+        <a class="nav-item" href="painel_acoes_yield_cost.html"><span class="nav-icon">&#8644;</span>Comparar a&ccedil;&otilde;es</a>
+        <div class="nav-item">Carteira</div>
+        <a class="nav-item" href="proventos.html"><span class="nav-icon">$</span>Proventos</a>
+        <a class="nav-item" href="funil_acoes.html"><span class="nav-icon">&#9661;</span>Funil de a&ccedil;&otilde;es</a>
+        <a class="nav-item" href="tabela_dados.html"><span class="nav-icon">&#9638;</span>Tabela de dados</a>
+        <div class="nav-section">Relat&oacute;rios</div>
+        <a class="nav-item" href="relatorio_yield_12m.html"><span class="nav-icon">&#9638;</span>Yield 12M</a>
+      </nav>
+      <div class="help">A linha secund&aacute;ria usa somente valores existentes no banco. Lacunas permanecem interrompidas.</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Evolu&ccedil;&atilde;o de a&ccedil;&otilde;es</h1>
+          <p class="subtitle">Compare pre&ccedil;os e um indicador financeiro em leitura trimestral.</p>
+        </div>
+        <div class="stamp">Base integrada<br><strong>COTAHIST + CVM + B3</strong></div>
+      </header>
+      <section class="panel filters">
+        <label><span class="label">A&ccedil;&atilde;o A</span><select id="stockA"></select></label>
+        <label><span class="label">A&ccedil;&atilde;o B</span><select id="stockB"></select></label>
+        <label><span class="label">Indicador no eixo secund&aacute;rio</span><select id="indicator"></select></label>
+        <label><span class="label">Per&iacute;odo inicial</span><input id="start" type="month" value="2020-01" /></label>
+        <label><span class="label">Per&iacute;odo final</span><input id="end" type="month" value="2026-05" /></label>
+        <button class="button" id="apply" type="button">Aplicar</button>
+        <p class="method">Periodicidade trimestral: cada ponto de pre&ccedil;o e indicador corresponde ao &uacute;ltimo fechamento mensal real dispon&iacute;vel no trimestre. Fundamentos respeitam a &uacute;ltima publica&ccedil;&atilde;o CVM recebida at&eacute; a data do ponto.</p>
+      </section>
+      <section class="cards">
+        <article class="panel card"><p class="card-label">Pre&ccedil;o atual A</p><div class="card-value" id="priceA">-</div><div class="card-detail" id="detailA"></div></article>
+        <article class="panel card"><p class="card-label">Pre&ccedil;o atual B</p><div class="card-value b" id="priceB">-</div><div class="card-detail" id="detailB"></div></article>
+        <article class="panel card"><p class="card-label" id="indicatorLabelA">Indicador A</p><div class="card-value" id="valueA">-</div><div class="card-detail" id="indicatorDetailA"></div></article>
+        <article class="panel card"><p class="card-label" id="indicatorLabelB">Indicador B</p><div class="card-value b" id="valueB">-</div><div class="card-detail" id="indicatorDetailB"></div></article>
+      </section>
+      <section class="panel chart">
+        <div class="chart-head">
+          <div>
+            <h2 class="title">Pre&ccedil;o de fechamento e indicador selecionado</h2>
+            <div class="legend" id="legend"></div>
+          </div>
+          <div class="badge">Eixo esquerdo: pre&ccedil;o (R$)<br><span id="rightAxisLabel">Eixo direito: indicador</span></div>
+        </div>
+        <div class="plot" id="plot"><svg id="svg" viewBox="0 0 1240 470" role="img" aria-label="Evolu&ccedil;&atilde;o trimestral"></svg></div>
+      </section>
+      <footer>Fontes: B3 COTAHIST, B3 Empresas Listadas e CVM DFP/ITR.</footer>
+    </main>
+  </div>
+  <script src="static/api-client.js"></script>
+  <script>
+    const stockA = document.getElementById("stockA");
+    const stockB = document.getElementById("stockB");
+    const indicator = document.getElementById("indicator");
+    const start = document.getElementById("start");
+    const end = document.getElementById("end");
+    const options = [
+      ["lucro_liquido_reais", "Lucro líquido", "currencyCompact"],
+      ["patrimonio_liquido_reais", "Patrimônio líquido", "currencyCompact"],
+      ["receita_reais", "Receita", "currencyCompact"],
+      ["fluxo_caixa_reais", "Fluxo de caixa", "currencyCompact"],
+      ["dividendos_por_acao_12m_reais", "Dividendos/ação 12m", "money"],
+      ["distribuicao_total_reais", "Distribuição total", "currencyCompact"],
+      ["lpa_reais", "LPA", "money"],
+      ["roe_periodo_pct", "ROE", "pct"],
+      ["payout_periodo_pct", "Payout", "pct"],
+      ["pl_ratio", "P/L", "number"],
+      ["crescimento_lpa_pct", "Crescimento do LPA", "pct"],
+      ["peg_ratio", "PEG", "number"]
+    ];
+    const indicatorMeta = Object.fromEntries(options.map(([key, label, format]) => [key, {label, format}]));
+    const colors = {priceA:"#249eff", priceB:"#ff8d19", valueA:"#21c4ee", valueB:"#dfad46"};
+    const dash = "-";
+    const moneyText = value => value == null ? dash : value.toLocaleString("pt-BR", {style:"currency",currency:"BRL",maximumFractionDigits:2});
+    const compact = value => value == null ? dash : value.toLocaleString("pt-BR", {style:"currency",currency:"BRL",notation:"compact",compactDisplay:"short",maximumFractionDigits:2});
+    const numberText = value => value == null ? dash : value.toLocaleString("pt-BR", {maximumFractionDigits:2,minimumFractionDigits:2});
+    const formatValue = (value, type) => type === "money" ? moneyText(value) : type === "currencyCompact" ? compact(value) : type === "pct" ? (value == null ? dash : numberText(value) + "%") : numberText(value);
+    const quarterLabel = row => `${Math.floor((row.mes - 1) / 3) + 1}T/${row.ano}`;
+
+    async function populate() {
+      const response = await fetch("/api/cotahist?ano_inicio=2026&ano_fim=2026", {cache:"no-store"});
+      const payload = await response.json();
+      const stocks = [...new Map(payload.dados.map(row => [row.ticker, row.nome])).entries()].sort();
+      const html = stocks.map(([ticker, nome]) => `<option value="${ticker}">${ticker} - ${nome}</option>`).join("");
+      stockA.innerHTML = html; stockB.innerHTML = html;
+      stockA.value = stocks.some(([ticker]) => ticker === "PETR4") ? "PETR4" : stocks[0][0];
+      stockB.value = stocks.some(([ticker]) => ticker === "VALE3") ? "VALE3" : stocks[1][0];
+      indicator.innerHTML = options.map(([key, label]) => `<option value="${key}">${label}</option>`).join("");
+      indicator.value = "roe_periodo_pct";
+    }
+
+    function quarterly(rows) {
+      const selected = new Map();
+      rows.forEach(row => {
+        const key = `${row.ano}-${Math.floor((row.mes - 1) / 3) + 1}`;
+        const previous = selected.get(key);
+        if (!previous || row.data_fechamento > previous.data_fechamento) selected.set(key, row);
+      });
+      return [...selected.values()];
+    }
+
+    function validNumbers(rows, field) { return rows.map(row => row[field]).filter(value => value != null && Number.isFinite(value)); }
+    function scale(max, top, bottom) { return value => bottom - (value / (max || 1)) * (bottom - top); }
+    function path(rows, field, x, y) {
+      let built = ""; let open = false;
+      rows.forEach((row, index) => {
+        const value = row[field];
+        if (value == null || !Number.isFinite(value)) { open = false; return; }
+        built += `${open ? " L" : " M"}${x(index).toFixed(1)} ${y(value).toFixed(1)}`;
+        open = true;
+      });
+      return built.trim();
+    }
+    function circles(rows, field, x, y, color, dashed=false) {
+      return rows.map((row, index) => row[field] == null ? "" :
+        `<circle cx="${x(index)}" cy="${y(row[field])}" r="${dashed ? 3 : 4}" fill="${color}" stroke="#071a35" stroke-width="2"/>`
+      ).join("");
+    }
+
+    async function render() {
+      if (start.value && end.value && start.value > end.value) return;
+      const query = period => `/api/indicadores?ticker=${period}&inicio=${start.value}&fim=${end.value}`;
+      const [payloadA, payloadB] = await Promise.all([
+        fetch(query(stockA.value), {cache:"no-store"}).then(response => response.json()),
+        fetch(query(stockB.value), {cache:"no-store"}).then(response => response.json())
+      ]);
+      const rowsA = quarterly(payloadA.dados || []);
+      const rowsB = quarterly(payloadB.dados || []);
+      draw(rowsA, rowsB);
+    }
+
+    function draw(rowsA, rowsB) {
+      const svg = document.getElementById("svg");
+      const metric = indicator.value;
+      const meta = indicatorMeta[metric];
+      const labels = [...new Set([...rowsA, ...rowsB].map(quarterLabel))].sort((left, right) => {
+        const [quarterLeft, yearLeft] = left.split("T/");
+        const [quarterRight, yearRight] = right.split("T/");
+        return (Number(yearLeft) * 4 + Number(quarterLeft)) - (Number(yearRight) * 4 + Number(quarterRight));
+      });
+      const byLabel = rows => new Map(rows.map(row => [quarterLabel(row), row]));
+      const mapA = byLabel(rowsA); const mapB = byLabel(rowsB);
+      const alignedA = labels.map(label => mapA.get(label) || {preco_fechamento:null, [metric]:null});
+      const alignedB = labels.map(label => mapB.get(label) || {preco_fechamento:null, [metric]:null});
+      const latestA = rowsA[rowsA.length - 1]; const latestB = rowsB[rowsB.length - 1];
+      document.getElementById("priceA").textContent = latestA ? moneyText(latestA.preco_fechamento) : dash;
+      document.getElementById("priceB").textContent = latestB ? moneyText(latestB.preco_fechamento) : dash;
+      document.getElementById("detailA").textContent = latestA ? `${stockA.value} | ${quarterLabel(latestA)}` : "Sem dado";
+      document.getElementById("detailB").textContent = latestB ? `${stockB.value} | ${quarterLabel(latestB)}` : "Sem dado";
+      document.getElementById("indicatorLabelA").textContent = `${meta.label} - ${stockA.value}`;
+      document.getElementById("indicatorLabelB").textContent = `${meta.label} - ${stockB.value}`;
+      document.getElementById("valueA").textContent = latestA ? formatValue(latestA[metric], meta.format) : dash;
+      document.getElementById("valueB").textContent = latestB ? formatValue(latestB[metric], meta.format) : dash;
+      document.getElementById("indicatorDetailA").textContent = latestA && latestA[metric] != null ? quarterLabel(latestA) : "Sem valor no trimestre";
+      document.getElementById("indicatorDetailB").textContent = latestB && latestB[metric] != null ? quarterLabel(latestB) : "Sem valor no trimestre";
+      document.getElementById("rightAxisLabel").textContent = `Eixo direito: ${meta.label}`;
+      document.getElementById("legend").innerHTML =
+        `<span class="legend-item"><i class="line" style="--series:${colors.priceA}"></i>${stockA.value} preço</span>
+         <span class="legend-item"><i class="line" style="--series:${colors.priceB}"></i>${stockB.value} preço</span>
+         <span class="legend-item"><i class="line dashed" style="--series:${colors.valueA}"></i>${stockA.value} ${meta.label}</span>
+         <span class="legend-item"><i class="line dashed" style="--series:${colors.valueB}"></i>${stockB.value} ${meta.label}</span>`;
+      if (!labels.length) { svg.innerHTML = '<text x="620" y="220" text-anchor="middle" fill="#99acc9">Nenhum dado para o período selecionado.</text>'; return; }
+      const left = 82, right = 1138, top = 28, bottom = 398;
+      const prices = [...validNumbers(alignedA, "preco_fechamento"), ...validNumbers(alignedB, "preco_fechamento")];
+      const values = [...validNumbers(alignedA, metric), ...validNumbers(alignedB, metric)];
+      const priceMax = Math.max(...prices, 1) * 1.13;
+      const metricMax = Math.max(...values.map(Math.abs), 1) * 1.18;
+      const metricMin = Math.min(...values, 0);
+      const metricRange = metricMax - metricMin || 1;
+      const yPrice = scale(priceMax, top, bottom);
+      const yMetric = value => bottom - ((value - metricMin) / metricRange) * (bottom - top);
+      const x = index => labels.length === 1 ? (left + right) / 2 : left + index * (right - left) / (labels.length - 1);
+      const horizontal = [0,.25,.5,.75,1].map(step => {
+        const y = bottom - step * (bottom - top);
+        const pValue = priceMax * step;
+        const mValue = metricMin + metricRange * step;
+        return `<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#102b4b"/>
+          <text x="${left - 12}" y="${y + 4}" text-anchor="end" fill="#6b9fd3" font-size="11">${moneyText(pValue)}</text>
+          <text x="${right + 12}" y="${y + 4}" fill="#c49f54" font-size="11">${formatValue(mValue, meta.format)}</text>`;
+      }).join("");
+      const labelEvery = Math.max(1, Math.ceil(labels.length / 12));
+      const xLabels = labels.map((label, index) => index % labelEvery === 0 || index === labels.length - 1 ?
+        `<text x="${x(index)}" y="432" text-anchor="middle" fill="#8fa2bf" font-size="11">${label}</text>` : ""
+      ).join("");
+      const pricePathA = path(alignedA, "preco_fechamento", x, yPrice);
+      const pricePathB = path(alignedB, "preco_fechamento", x, yPrice);
+      const metricPathA = path(alignedA, metric, x, yMetric);
+      const metricPathB = path(alignedB, metric, x, yMetric);
+      svg.innerHTML = `${horizontal}<line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" stroke="#38638e"/>
+        ${pricePathA ? `<path d="${pricePathA}" fill="none" stroke="${colors.priceA}" stroke-width="2.7"/>` : ""}
+        ${pricePathB ? `<path d="${pricePathB}" fill="none" stroke="${colors.priceB}" stroke-width="2.7"/>` : ""}
+        ${metricPathA ? `<path d="${metricPathA}" fill="none" stroke="${colors.valueA}" stroke-width="2" stroke-dasharray="7 5"/>` : ""}
+        ${metricPathB ? `<path d="${metricPathB}" fill="none" stroke="${colors.valueB}" stroke-width="2" stroke-dasharray="7 5"/>` : ""}
+        ${circles(alignedA, "preco_fechamento", x, yPrice, colors.priceA)}
+        ${circles(alignedB, "preco_fechamento", x, yPrice, colors.priceB)}
+        ${circles(alignedA, metric, x, yMetric, colors.valueA, true)}
+        ${circles(alignedB, metric, x, yMetric, colors.valueB, true)}
+        ${xLabels}`;
+    }
+    document.getElementById("apply").addEventListener("click", render);
+    indicator.addEventListener("change", render);
+    stockA.addEventListener("change", render);
+    stockB.addEventListener("change", render);
+    populate().then(render);
+  </script>
+</body>
+</html>

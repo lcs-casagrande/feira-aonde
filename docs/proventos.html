@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Filosofia dos Dados | Proventos e Lucro</title>
+  <style>
+    :root {
+      --bg:#040f24; --panel:#071a35; --line:#143457; --muted:#99acc9; --white:#edf4ff;
+      --blue:#249eff; --cyan:#21c4ee; --orange:#ff8d19; --gold:#dfad46;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; color:var(--white); background:var(--bg);
+      font-family:Inter, "Segoe UI", Arial, sans-serif; letter-spacing:0;
+    }
+    button, input { font:inherit; }
+    .app {
+      min-height:100vh; display:grid; grid-template-columns:218px minmax(0,1fr);
+      background:radial-gradient(circle at 92% 6%, rgba(36,158,255,.1), transparent 28rem), #050f22;
+    }
+    .sidebar {
+      min-height:100vh; padding:28px 18px 18px; border-right:1px solid #102a48;
+      display:flex; flex-direction:column; gap:34px; background:linear-gradient(180deg,#061224,#06162e);
+    }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:750; line-height:1.12; font-size:15px; }
+    .brand-symbol { position:relative; width:48px; height:44px; overflow:hidden; }
+    .brand-stripe { position:absolute; right:2px; width:45px; border-radius:30px 2px 30px 2px; transform:skewX(-28deg) rotate(-18deg); }
+    .brand-stripe.one { top:5px; height:10px; background:linear-gradient(90deg,#ffc434,#ff8414); }
+    .brand-stripe.two { top:16px; width:43px; height:10px; background:linear-gradient(90deg,#25c6f0,#1488dd); }
+    .brand-stripe.three { top:27px; width:38px; height:9px; background:linear-gradient(90deg,#2872d0,#123a92); }
+    nav { display:grid; gap:7px; }
+    .nav-item {
+      min-height:42px; padding:0 12px; border-radius:8px; display:flex; align-items:center; gap:13px;
+      font-size:14px; color:#bdc9de; text-decoration:none;
+    }
+    .nav-item:hover { color:#e2eefc; background:rgba(9,37,75,.45); }
+    .nav-item.active { color:#64bdff; background:#062651; }
+    .nav-icon { width:18px; text-align:center; font-size:16px; }
+    .nav-section { color:#6d82a2; padding:13px 12px 3px; font-size:11px; text-transform:uppercase; font-weight:700; }
+    .help {
+      margin-top:auto; padding:16px 13px; border:1px solid var(--line); border-radius:8px;
+      color:#b8c9e1; font-size:12px; line-height:1.55; background:#081e3d;
+    }
+    .main { min-width:0; padding:23px 24px 17px; }
+    .topbar { display:flex; justify-content:space-between; align-items:start; gap:18px; margin-bottom:20px; }
+    h1 { margin:0 0 7px; font-size:27px; font-weight:720; }
+    .subtitle { margin:0; color:#c0cce0; font-size:14px; }
+    .stamp { color:#8ea4c4; font-size:12px; line-height:1.6; text-align:right; }
+    .panel {
+      border:1px solid var(--line); border-radius:8px;
+      background:linear-gradient(180deg, rgba(7,25,51,.98), rgba(6,22,44,.98));
+    }
+    .filters {
+      padding:18px 20px; display:flex; flex-wrap:wrap; gap:13px 18px; align-items:end; margin-bottom:12px;
+    }
+    .field { width:210px; }
+    .label { display:block; margin:0 0 8px; color:var(--muted); font-size:10px; font-weight:700; text-transform:uppercase; }
+    input {
+      width:100%; height:42px; padding:0 11px; border:1px solid #17385e; border-radius:7px;
+      color:#e6eefc; background:#071b38; outline:none;
+    }
+    input:focus { border-color:var(--blue); }
+    .button {
+      height:42px; padding:0 17px; border:1px solid #185287; border-radius:7px;
+      color:#e5f2ff; background:#0a3971; cursor:pointer;
+    }
+    .note { flex-basis:100%; margin:0; color:#98acc8; font-size:11px; line-height:1.55; }
+    .summary { display:grid; grid-template-columns:repeat(3,minmax(190px,1fr)); gap:12px; margin-bottom:12px; }
+    .card { padding:15px 17px; }
+    .card-label { margin:0 0 8px; color:#a7b9d6; font-size:10px; text-transform:uppercase; font-weight:700; }
+    .card-value { color:var(--cyan); font-size:25px; font-weight:750; }
+    .card-value.orange { color:var(--orange); }
+    .card-detail { margin-top:5px; color:#94a8c6; font-size:11px; }
+    .charts { display:grid; grid-template-columns:1fr 1px 1fr; padding:18px 20px 20px; gap:22px; }
+    .divider { background:#16385c; }
+    .graph-title { margin:0; font-size:15px; font-weight:700; }
+    .graph-copy { margin:6px 0 18px; font-size:12px; color:#98acc8; }
+    .rows { display:grid; gap:11px; }
+    .bar-row { display:grid; align-items:center; gap:10px; min-height:35px; }
+    .left .bar-row { grid-template-columns:82px minmax(120px,1fr) 72px; }
+    .right .bar-row { grid-template-columns:72px minmax(120px,1fr) 82px; }
+    .ticker { font-weight:700; font-size:13px; color:#e6f0ff; white-space:nowrap; }
+    .left .ticker { text-align:right; }
+    .value { color:#bdcee5; font-size:12px; white-space:nowrap; }
+    .left .value { text-align:right; }
+    .track { height:22px; background:#102743; border-radius:4px; overflow:hidden; display:flex; }
+    .left .track { justify-content:flex-end; }
+    .fill { height:100%; min-width:2px; border-radius:4px; }
+    .left .fill { background:linear-gradient(90deg,#1978c6,var(--cyan)); }
+    .right .fill { background:linear-gradient(90deg,var(--orange),#dbb34a); }
+    .empty { color:#99acc9; padding:38px 0; text-align:center; font-size:13px; }
+    .footnote { margin:15px 0 0; padding-top:13px; border-top:1px solid #102a48; color:#8da2bf; font-size:11px; line-height:1.55; }
+    footer { text-align:center; color:#7287a6; font-size:11px; margin-top:14px; }
+    @media (max-width:1000px) {
+      .app { grid-template-columns:1fr; } .sidebar { display:none; }
+      .charts { grid-template-columns:1fr; } .divider { display:none; }
+      .summary { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-symbol" aria-hidden="true"><span class="brand-stripe one"></span><span class="brand-stripe two"></span><span class="brand-stripe three"></span></span>
+        <span>FILOSOFIA<br>DOS DADOS</span>
+      </div>
+      <nav>
+        <a class="nav-item" href="evolucao_acoes.html"><span class="nav-icon">&#8599;</span>A&ccedil;&otilde;es</a>
+        <a class="nav-item" href="painel_acoes_yield_cost.html"><span class="nav-icon">&#8644;</span>Comparar a&ccedil;&otilde;es</a>
+        <div class="nav-item">Carteira</div>
+        <a class="nav-item active" href="proventos.html"><span class="nav-icon">$</span>Proventos</a>
+        <a class="nav-item" href="funil_acoes.html"><span class="nav-icon">&#9661;</span>Funil de a&ccedil;&otilde;es</a>
+        <a class="nav-item" href="tabela_dados.html"><span class="nav-icon">&#9638;</span>Tabela de dados</a>
+        <div class="nav-section">Relat&oacute;rios</div>
+        <a class="nav-item" href="relatorio_yield_12m.html"><span class="nav-icon">&#9638;</span>Yield 12M</a>
+      </nav>
+      <div class="help">Dividendos por a&ccedil;&atilde;o e lucro l&iacute;quido respondem perguntas diferentes e usam escalas independentes.</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Proventos e lucro</h1>
+          <p class="subtitle">Rankings espelhados dos pap&eacute;is do IBOV presentes no banco.</p>
+        </div>
+        <div class="stamp">Dados at&eacute;<br><strong>25/05/2026</strong></div>
+      </header>
+      <section class="panel filters">
+        <label class="field"><span class="label">M&ecirc;s de refer&ecirc;ncia</span><input id="period" type="month" value="2026-05" /></label>
+        <button id="apply" class="button" type="button">Aplicar</button>
+        <p class="note">Dividendos correspondem ao total por a&ccedil;&atilde;o nos 12 meses encerrados no m&ecirc;s selecionado. Lucro corresponde ao &uacute;ltimo DFP/ITR recebido pela CVM at&eacute; o fechamento daquele m&ecirc;s.</p>
+      </section>
+      <section class="summary">
+        <article class="panel card"><p class="card-label">Pap&eacute;is analisados</p><div class="card-value" id="papers">-</div><div class="card-detail" id="periodLabel"></div></article>
+        <article class="panel card"><p class="card-label">Maior dividendo por a&ccedil;&atilde;o</p><div class="card-value" id="dividendLeader">-</div><div class="card-detail" id="dividendDetail"></div></article>
+        <article class="panel card"><p class="card-label">Maior lucro l&iacute;quido</p><div class="card-value orange" id="profitLeader">-</div><div class="card-detail" id="profitDetail"></div></article>
+      </section>
+      <section class="panel charts">
+        <article class="graph left">
+          <h2 class="graph-title">Maiores dividendos pagos por a&ccedil;&atilde;o</h2>
+          <p class="graph-copy">Acumulado dos 12 meses, em R$ por a&ccedil;&atilde;o.</p>
+          <div class="rows" id="dividendRows"></div>
+        </article>
+        <div class="divider"></div>
+        <article class="graph right">
+          <h2 class="graph-title">Maiores lucros l&iacute;quidos</h2>
+          <p class="graph-copy">Resultado reportado no demonstrativo vigente, em reais.</p>
+          <div class="rows" id="profitRows"></div>
+        </article>
+        <p class="footnote" style="grid-column:1 / -1">O lucro &eacute; reportado pela companhia. Por isso, pap&eacute;is de classes diferentes da mesma empresa, como ON e PN, podem exibir o mesmo lucro l&iacute;quido no ranking.</p>
+      </section>
+      <footer>Fontes: B3 Empresas Listadas para proventos e CVM DFP/ITR para lucro l&iacute;quido.</footer>
+    </main>
+  </div>
+  <script src="static/api-client.js"></script>
+  <script>
+    const period = document.getElementById("period");
+    const currency = value => value == null ? "-" : value.toLocaleString("pt-BR", {style:"currency", currency:"BRL", maximumFractionDigits:2});
+    const compact = value => value == null ? "-" : value.toLocaleString("pt-BR", {style:"currency", currency:"BRL", notation:"compact", compactDisplay:"short", maximumFractionDigits:2});
+    const topTen = (rows, field) => rows.filter(row => row[field] != null && row[field] > 0).sort((a,b) => b[field] - a[field]).slice(0,10);
+
+    function leftBars(rows) {
+      if (!rows.length) return '<div class="empty">Sem dividendos dispon&iacute;veis no per&iacute;odo.</div>';
+      const max = rows[0].dividendos_por_acao_12m_reais;
+      return rows.map(row => `<div class="bar-row"><span class="value">${currency(row.dividendos_por_acao_12m_reais)}</span><div class="track"><span class="fill" style="width:${row.dividendos_por_acao_12m_reais / max * 100}%"></span></div><span class="ticker">${row.ticker}</span></div>`).join("");
+    }
+    function rightBars(rows) {
+      if (!rows.length) return '<div class="empty">Sem lucro dispon&iacute;vel no per&iacute;odo.</div>';
+      const max = rows[0].lucro_liquido_reais;
+      return rows.map(row => `<div class="bar-row"><span class="ticker">${row.ticker}</span><div class="track"><span class="fill" style="width:${row.lucro_liquido_reais / max * 100}%"></span></div><span class="value">${compact(row.lucro_liquido_reais)}</span></div>`).join("");
+    }
+    async function render() {
+      const month = period.value || "2026-05";
+      const response = await fetch(`/api/indicadores?inicio=${month}&fim=${month}`, {cache:"no-store"});
+      const payload = await response.json();
+      const rows = payload.dados || [];
+      const dividends = topTen(rows, "dividendos_por_acao_12m_reais");
+      const profits = topTen(rows, "lucro_liquido_reais");
+      document.getElementById("papers").textContent = rows.length;
+      document.getElementById("periodLabel").textContent = month.split("-").reverse().join("/");
+      document.getElementById("dividendLeader").textContent = dividends.length ? dividends[0].ticker : "-";
+      document.getElementById("dividendDetail").textContent = dividends.length ? currency(dividends[0].dividendos_por_acao_12m_reais) + " por ação" : "Sem valor";
+      document.getElementById("profitLeader").textContent = profits.length ? profits[0].ticker : "-";
+      document.getElementById("profitDetail").textContent = profits.length ? compact(profits[0].lucro_liquido_reais) : "Sem valor";
+      document.getElementById("dividendRows").innerHTML = leftBars(dividends);
+      document.getElementById("profitRows").innerHTML = rightBars(profits);
+    }
+    document.getElementById("apply").addEventListener("click", render);
+    period.addEventListener("change", render);
+    render();
+  </script>
+</body>
+</html>

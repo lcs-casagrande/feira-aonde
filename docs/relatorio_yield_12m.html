@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Filosofia dos Dados | Relatorio Yield 12M</title>
+  <style>
+    :root {
+      --bg:#040f24; --panel:#071a35; --line:#143457; --muted:#99acc9;
+      --white:#edf4ff; --blue:#249eff; --cyan:#21c4ee; --orange:#ff8d19;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; color:var(--white); background:var(--bg);
+      font-family:Inter, "Segoe UI", Arial, sans-serif; letter-spacing:0;
+    }
+    .app {
+      min-height:100vh; display:grid; grid-template-columns:218px minmax(0, 1fr);
+      background:radial-gradient(circle at 91% 4%, rgba(36,158,255,.1), transparent 28rem), #050f22;
+    }
+    .sidebar {
+      min-height:100vh; padding:28px 18px 18px; border-right:1px solid #102a48;
+      display:flex; flex-direction:column; gap:34px; background:linear-gradient(180deg,#061224,#06162e);
+    }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:750; line-height:1.12; font-size:15px; }
+    .brand-symbol { position:relative; width:48px; height:44px; overflow:hidden; }
+    .brand-stripe { position:absolute; right:2px; width:45px; border-radius:30px 2px 30px 2px; transform:skewX(-28deg) rotate(-18deg); }
+    .brand-stripe.one { top:5px; height:10px; background:linear-gradient(90deg,#ffc434,#ff8414); }
+    .brand-stripe.two { top:16px; width:43px; height:10px; background:linear-gradient(90deg,#25c6f0,#1488dd); }
+    .brand-stripe.three { top:27px; width:38px; height:9px; background:linear-gradient(90deg,#2872d0,#123a92); }
+    nav { display:grid; gap:7px; }
+    .nav-item {
+      min-height:42px; padding:0 12px; border-radius:8px; display:flex; align-items:center; gap:13px;
+      font-size:14px; color:#bdc9de; text-decoration:none;
+    }
+    .nav-item:hover { color:#e2eefc; background:rgba(9,37,75,.45); }
+    .nav-item.active { color:#64bdff; background:#062651; }
+    .nav-icon { width:18px; text-align:center; font-size:16px; }
+    .nav-section { color:#6d82a2; padding:13px 12px 3px; font-size:11px; text-transform:uppercase; font-weight:700; }
+    .help {
+      margin-top:auto; padding:16px 13px; border:1px solid var(--line); border-radius:8px;
+      color:#b8c9e1; font-size:12px; line-height:1.55; background:#081e3d;
+    }
+    .main { min-width:0; padding:26px 28px 22px; }
+    .report {
+      max-width:980px; margin:0 auto; padding:30px 36px;
+      border:1px solid var(--line); border-radius:8px;
+      background:linear-gradient(180deg, rgba(7,25,51,.98), rgba(6,22,44,.98));
+    }
+    h1 { margin:0 0 18px; font-size:32px; line-height:1.15; }
+    h2 { margin:30px 0 12px; font-size:20px; color:#dceaff; }
+    h3 { margin:22px 0 10px; font-size:16px; color:#9dd7ff; }
+    p, li { color:#cfdbec; font-size:15px; line-height:1.72; }
+    p { margin:0 0 14px; }
+    ul { margin:0 0 16px; padding-left:22px; }
+    strong { color:#ffffff; }
+    table { width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:14px; }
+    th, td { padding:11px 12px; border-bottom:1px solid #143457; text-align:left; color:#dce8f8; }
+    th { color:#8ecfff; text-transform:uppercase; font-size:11px; }
+    .report-figure { margin:18px 0 24px; }
+    .report-figure img {
+      display:block; width:100%; max-width:100%; height:auto;
+      border:1px solid #143457; border-radius:8px; background:#06142c;
+    }
+    .report-figure figcaption { margin-top:8px; color:#8fa5c6; font-size:12px; text-align:center; }
+    @media (max-width:880px) {
+      .app { grid-template-columns:1fr; }
+      .sidebar { display:none; }
+      .main { padding:18px; }
+      .report { padding:24px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-symbol" aria-hidden="true"><span class="brand-stripe one"></span><span class="brand-stripe two"></span><span class="brand-stripe three"></span></span>
+        <span>FILOSOFIA<br>DOS DADOS</span>
+      </div>
+      <nav>
+        <a class="nav-item" href="evolucao_acoes.html"><span class="nav-icon">&#8599;</span>A&ccedil;&otilde;es</a>
+        <a class="nav-item" href="painel_acoes_yield_cost.html"><span class="nav-icon">&#8644;</span>Comparar a&ccedil;&otilde;es</a>
+        <div class="nav-item">Carteira</div>
+        <a class="nav-item" href="proventos.html"><span class="nav-icon">$</span>Proventos</a>
+        <a class="nav-item" href="funil_acoes.html"><span class="nav-icon">&#9661;</span>Funil de a&ccedil;&otilde;es</a>
+        <a class="nav-item" href="tabela_dados.html"><span class="nav-icon">&#9638;</span>Tabela de dados</a>
+        <div class="nav-item">Favoritos</div>
+        <div class="nav-section">Relat&oacute;rios</div>
+        <a class="nav-item active" href="relatorio_yield_12m.html"><span class="nav-icon">&#9638;</span>Yield 12M</a>
+      </nav>
+      <div class="help">Relat&oacute;rios de metodologia e estudos de indicadores.</div>
+    </aside>
+    <main class="main">
+      <article class="report">
+        <h1>Yield 12M: quando o Dividend Yield engana</h1>
+<p>Imagine que você analisa uma ação que comprou há 1 ano e se depara com um Dividend Yield de 6,68%, como ocorreu com VALE3 entre maio de 2025 e maio de 2026.</p>
+<p>Pouco depois, analisa BBSE3, com 13,11%, e SCAR3, com 52% de DY, e acredita ter acertado em cheio.</p>
+<p>Parabéns, você acaba de ser enganado pelos números.</p>
+<p>Veja a diferença de performance entre duas delas.</p>
+<figure class="report-figure"><img src="assets/reports/yield_12m_vale3_bbse3.png" alt="Comparação entre VALE3 e BBSE3" /><figcaption>Comparação entre VALE3 e BBSE3</figcaption></figure>
+<p>Nitidamente, VALE3 foi muito melhor nesse período, superando até mesmo SCAR3, apesar do seu alto DY.</p>
+<figure class="report-figure"><img src="assets/reports/yield_12m_vale3_scar3.png" alt="Comparação entre VALE3 e SCAR3" /><figcaption>Comparação entre VALE3 e SCAR3</figcaption></figure>
+<h2>Problema identificado</h2>
+<p>O Dividend Yield tradicional é calculado assim:</p>
+<p><strong>Dividend Yield tradicional = dividendos pagos nos últimos 12 meses ÷ preço atual da ação</strong></p>
+<p>O problema central é que esse indicador mistura duas informações de momentos diferentes:</p>
+<ul>
+<li>dividendos pagos no passado;</li>
+<li>preço da ação no presente.</li>
+</ul>
+<p>Isso pode gerar uma leitura distorcida da qualidade da empresa como pagadora de dividendos.</p>
+<p>Quando a ação sobe, o Dividend Yield tradicional cai, mesmo que a empresa tenha pago bons dividendos. Quando a ação cai, o Dividend Yield tradicional sobe, mesmo que a empresa esteja passando por problemas.</p>
+<p>Ou seja, o indicador pode acabar:</p>
+<ul>
+<li>punindo empresas que valorizaram;</li>
+<li>favorecendo empresas que caíram;</li>
+<li>confundindo dividendos altos com preço depreciado;</li>
+<li>dificultando a identificação de boas pagadoras de dividendos.</li>
+</ul>
+<figure class="report-figure"><img src="assets/reports/dy_tradicional_tabela_exemplo.png" alt="Tabela mostrando a distorção do Dividend Yield tradicional" /><figcaption>Tabela mostrando a distorção do Dividend Yield tradicional</figcaption></figure>
+<p>Pelo Dividend Yield tradicional, a empresa B parece melhor.</p>
+<p>Mas a empresa A pagou mais dividendos e ainda valorizou.</p>
+<h2>Proposta do novo indicador</h2>
+<p>A proposta é criar ou usar um indicador alternativo chamado:</p>
+<p><strong>Yield 12M</strong></p>
+<p>Fórmula:</p>
+<p><strong>Yield 12M = dividendos pagos nos últimos 12 meses ÷ preço da ação 12 meses atrás</strong></p>
+<p>A ideia é comparar dados do mesmo período:</p>
+<ul>
+<li>preço do início do período;</li>
+<li>dividendos pagos ao longo do período.</li>
+</ul>
+<p>Assim, o indicador mede quanto a empresa realmente pagou em dividendos sobre o preço de entrada de quem comprou a ação 12 meses antes.</p>
+<p>Estamos usando o Dividend Yield corretamente?</p>
+<figure class="report-figure"><img src="assets/reports/yield_12m_tabela_exemplo.png" alt="Tabela comparando DY tradicional e Yield 12M" /><figcaption>Tabela comparando DY tradicional e Yield 12M</figcaption></figure>
+<p>Nesse caso, o Yield 12M mostra que a empresa A foi a melhor pagadora de dividendos no período.</p>
+<h2>Pergunta que cada indicador responde</h2>
+<p>O erro não está apenas no cálculo, mas na pergunta que cada indicador tenta responder.</p>
+<h3>Dividend Yield tradicional</h3>
+<p>Responde:</p>
+<p><strong>“Quanto os dividendos pagos nos últimos 12 meses representam sobre o preço atual da ação?”</strong></p>
+<p>Ele pode ser útil para ter uma visão rápida do dividendo em relação ao preço de tela atual.</p>
+<p>Mas ele não responde bem se a empresa foi uma boa pagadora de dividendos durante o período.</p>
+<h3>Yield 12M</h3>
+<p>Responde:</p>
+<p><strong>“Quanto a empresa pagou de dividendos nos últimos 12 meses sobre o preço da ação no início do período?”</strong></p>
+<p>Esse indicador é mais adequado para medir o histórico recente de pagamento de dividendos.</p>
+<p>Ele não serve sozinho para dizer se a ação está barata ou cara. Ele serve para avaliar a qualidade histórica da empresa como pagadora de dividendos.</p>
+<h2>Ponto forte principal do Yield 12M</h2>
+<p>O principal ponto forte é a coerência temporal.</p>
+<p>O Dividend Yield tradicional compara:</p>
+<p><strong>passado ÷ presente</strong></p>
+<p>O Yield 12M compara:</p>
+<p><strong>passado ÷ passado</strong></p>
+<p>Isso torna a análise mais limpa para avaliar o que aconteceu no período.</p>
+<p>O Yield 12M reduz a distorção causada por movimentos recentes de preço. Ele evita que uma ação que caiu pareça automaticamente melhor pagadora apenas porque ficou mais barata.</p>
+<p>Principais vantagens:</p>
+<ul>
+<li>mede melhor o dividendo realmente entregue no período;</li>
+<li>reduz o efeito artificial da queda do preço;</li>
+<li>não pune empresas que valorizaram;</li>
+<li>mostra melhor a experiência de quem ficou posicionado nos últimos 12 meses;</li>
+<li>ajuda a identificar empresas que pagam dividendos de forma consistente.</li>
+</ul>
+<h2>Limitações do Yield 12M</h2>
+<p>Mesmo sendo mais coerente para avaliar dividendos históricos, o Yield 12M continua sendo um indicador de passado.</p>
+<p>Ele não responde sozinho:</p>
+<ul>
+<li>se a empresa está barata;</li>
+<li>se a empresa está cara;</li>
+<li>se o dividendo será mantido;</li>
+<li>se o lucro é recorrente;</li>
+<li>se o payout é sustentável;</li>
+<li>se a dívida está controlada;</li>
+<li>se o fluxo de caixa livre cobre os dividendos;</li>
+<li>se houve dividendo extraordinário;</li>
+<li>se o setor está entrando em ciclo negativo.</li>
+</ul>
+<p>Portanto, ele não deve ser usado isoladamente para decisão de compra.</p>
+<p>Ele deve fazer parte de um funil maior, junto com indicadores de qualidade, risco, valuation e sustentabilidade dos dividendos.</p>
+<h2>Yield 12M personalizado</h2>
+<p>Temos também o indicador Yield Cost, que deve ter uma personalização para cada compra, específica para cada carteira. Ele informa o yield específico de cada operação, sendo mais preciso na análise da carteira.</p>
+<p>Mas ele não pode ser um indicador padrão de sites ou de resumos constantes.</p>
+<p>Uma análise interessante seria o acompanhamento do Yield Cost da carteira total e por safra. Na carteira total, seria interessante que ele não caísse abaixo de um certo mínimo. Já na análise por safra, o ideal seria observar uma subida constante, por conta do custo fixo e dos lucros crescentes.</p>
+<p>Esse é um bom tema para outro estudo.</p>
+<h2>Mas o Dividend Yield não serve para nada?</h2>
+<p>Foi feita uma simulação usando os últimos 10 anos de mercado.</p>
+<p>Foram comparadas duas estratégias:</p>
+<table><tbody>
+<tr><th>Carteira</th><th>Critério</th></tr>
+<tr><td>Carteira A</td><td>Compra as 20% empresas com maior Dividend Yield tradicional</td></tr>
+<tr><td>Carteira B</td><td>Compra as 20% empresas com maior Yield 12M</td></tr>
+</tbody></table>
+<p>Resultado observado:</p>
+<p><strong>A carteira A venceu.</strong></p>
+<p>Ou seja, a estratégia baseada no Dividend Yield tradicional teve maior retorno total na simulação.</p>
+<p>Esse resultado não invalida totalmente a tese do Yield 12M, mas muda a interpretação.</p>
+<h2>Interpretação da vitória do Dividend Yield tradicional</h2>
+<p>A principal hipótese é que o Dividend Yield tradicional venceu não por ser um melhor indicador de qualidade de dividendos, mas porque capturou empresas descontadas.</p>
+<p>Como o Dividend Yield tradicional sobe quando o preço da ação cai, ele pode ter selecionado empresas que estavam depreciadas no momento da compra.</p>
+<p>Se essas empresas depois recuperaram preço, a carteira A teve ganho relevante de valorização.</p>
+<p>Nesse caso, o Dividend Yield tradicional funcionou mais como um filtro de:</p>
+<p><strong>preço deprimido + reversão à média</strong></p>
+<p>E não necessariamente como um filtro de:</p>
+<p><strong>melhores empresas pagadoras de dividendos</strong></p>
+<p>Isso é importante porque existem duas perguntas diferentes:</p>
+<p><strong>Pergunta 1:</strong> Qual indicador identifica melhor empresas boas pagadoras de dividendos?</p>
+<p>Hipótese: o Yield 12M pode ser melhor.</p>
+<p><strong>Pergunta 2:</strong> Qual indicador gera maior retorno total?</p>
+<p>No teste feito, o Dividend Yield tradicional venceu.</p>
+<p>A vitória do DY tradicional pode ter vindo mais da valorização posterior das ações do que dos dividendos recebidos.</p>
+<h2>Conclusão</h2>
+<p>O Dividend Yield é um bom indicador para filtrar escolhas de carteira, especialmente quando se busca um mínimo, como 6%, conforme sugerem alguns grandes investidores.</p>
+<p>Ainda assim, é um indicador indireto. Sozinho, ele nunca terá uma resposta tão clara sobre valorização ou qualidade dos dividendos quanto o Yield 12M, que pode ser resumido pela lógica: quanto maior, melhor.</p>
+<p>Já para analisar o desempenho de ações ou de uma carteira, o Dividend Yield tradicional não é o indicador ideal.</p>
+<p>Nesse caso, o Yield 12M é mais adequado. Quando possível, o Yield Cost também pode ser usado para uma análise ainda mais personalizada.</p>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
