@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Filosofia dos Dados | Tabela de Dados</title>
+  <style>
+    :root {
+      --bg:#040f24; --sidebar:#061326; --panel:#071a35; --panel-2:#081e3b;
+      --line:#143457; --muted:#99acc9; --white:#edf4ff; --blue:#249eff;
+      --cyan:#21c4ee; --orange:#ff8d19; --gold:#dfad46; --green:#22c58b;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; color:var(--white); background:var(--bg);
+      font-family:Inter, "Segoe UI", Arial, sans-serif; letter-spacing:0;
+    }
+    button, select, input { font:inherit; }
+    .app {
+      min-height:100vh; display:grid; grid-template-columns:218px minmax(0, 1fr);
+      background:radial-gradient(circle at 92% 5%, rgba(36,158,255,.1), transparent 28rem), #050f22;
+    }
+    .sidebar {
+      min-height:100vh; padding:28px 18px 18px; border-right:1px solid #102a48;
+      display:flex; flex-direction:column; gap:34px; background:linear-gradient(180deg,#061224,#06162e);
+    }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:750; line-height:1.12; font-size:15px; }
+    .brand-symbol { position:relative; width:48px; height:44px; overflow:hidden; }
+    .brand-stripe {
+      position:absolute; right:2px; width:45px; border-radius:30px 2px 30px 2px;
+      transform:skewX(-28deg) rotate(-18deg);
+    }
+    .brand-stripe.one { top:5px; height:10px; background:linear-gradient(90deg,#ffc434,#ff8414); }
+    .brand-stripe.two { top:16px; width:43px; height:10px; background:linear-gradient(90deg,#25c6f0,#1488dd); }
+    .brand-stripe.three { top:27px; width:38px; height:9px; background:linear-gradient(90deg,#2872d0,#123a92); }
+    nav { display:grid; gap:7px; }
+    .nav-item {
+      min-height:42px; padding:0 12px; border-radius:8px; display:flex; align-items:center; gap:13px;
+      font-size:14px; color:#bdc9de; text-decoration:none;
+    }
+    .nav-item:hover { color:#e2eefc; background:rgba(9,37,75,.45); }
+    .nav-item.active { color:#64bdff; background:#062651; }
+    .nav-icon { width:18px; text-align:center; font-size:16px; }
+    .nav-section { color:#6d82a2; padding:13px 12px 3px; font-size:11px; text-transform:uppercase; font-weight:700; }
+    .help {
+      margin-top:auto; padding:16px 13px; border:1px solid var(--line); border-radius:8px;
+      color:#b8c9e1; font-size:12px; line-height:1.55; background:#081e3d;
+    }
+    .main { min-width:0; padding:23px 24px 17px; }
+    .topbar { display:flex; justify-content:space-between; gap:18px; margin-bottom:20px; align-items:start; }
+    h1 { margin:0 0 7px; font-size:27px; font-weight:720; }
+    .subtitle { margin:0; color:#c0cce0; font-size:14px; }
+    .stamp { text-align:right; color:#8ea4c4; font-size:12px; line-height:1.6; }
+    .stamp strong { color:#dceafd; }
+    .panel {
+      border:1px solid var(--line); border-radius:8px;
+      background:linear-gradient(180deg, rgba(7,25,51,.98), rgba(6,22,44,.98));
+    }
+    .filters {
+      display:grid; grid-template-columns:minmax(240px,1.2fr) 190px 190px auto;
+      gap:14px; align-items:end; padding:18px 20px;
+    }
+    .label { display:block; margin:0 0 8px; color:var(--muted); font-size:10px; font-weight:700; text-transform:uppercase; }
+    input, select {
+      width:100%; height:42px; padding:0 11px; border:1px solid #17385e; border-radius:7px;
+      background:#071b38; color:#e6eefc; outline:none;
+    }
+    input:focus, select:focus { border-color:var(--blue); }
+    .actions { display:flex; gap:8px; }
+    .button {
+      height:42px; padding:0 15px; border-radius:7px; cursor:pointer; border:1px solid #185287;
+      background:#0a3971; color:#e5f2ff;
+    }
+    .button.secondary { background:transparent; color:#62bcff; }
+    .note { grid-column:1 / -1; margin:0; font-size:11px; color:#96aac8; line-height:1.5; }
+    .kpis { display:grid; grid-template-columns:repeat(5, minmax(150px, 1fr)); gap:12px; margin:12px 0; }
+    .kpi { padding:14px 15px; min-height:101px; }
+    .kpi-label { color:#a7b9d6; font-size:10px; font-weight:700; text-transform:uppercase; margin:0 0 9px; }
+    .kpi-value { font-size:23px; font-weight:750; color:var(--cyan); white-space:nowrap; }
+    .kpi-value.compact { font-size:19px; }
+    .kpi-value.orange { color:var(--orange); }
+    .kpi-value.white { color:var(--white); }
+    .kpi-detail { margin-top:5px; color:#98acc8; font-size:11px; }
+    .table-panel { padding:17px 18px 13px; }
+    .table-head { display:flex; justify-content:space-between; gap:15px; align-items:center; margin-bottom:13px; }
+    .table-title { margin:0; font-size:14px; font-weight:700; }
+    .status { color:#96aac8; font-size:12px; }
+    .table-scroll { max-height:calc(100vh - 365px); min-height:320px; overflow:auto; border:1px solid #102b4b; border-radius:7px; }
+    table { width:100%; min-width:1640px; border-collapse:separate; border-spacing:0; font-size:12px; }
+    thead { position:sticky; top:0; z-index:2; }
+    th {
+      height:44px; padding:0 10px; text-align:left; color:#a7bad7; font-size:10px; text-transform:uppercase;
+      font-weight:700; background:#09203d; border-bottom:1px solid #173b62; white-space:nowrap;
+    }
+    td { padding:11px 10px; border-bottom:1px solid #102843; color:#dce7f8; white-space:nowrap; }
+    tbody tr:hover td { background:rgba(19,53,89,.34); }
+    th:nth-child(n+4), td:nth-child(n+4) { text-align:right; }
+    .ticker { font-weight:700; color:#eaf3ff; }
+    .source { color:#8ea3c0; }
+    .empty { text-align:center !important; padding:44px 12px; color:#9aadc8; }
+    .null { color:#7287a6; }
+    .positive { color:var(--green); }
+    .negative { color:var(--cyan); }
+    footer { margin-top:14px; color:#7287a6; text-align:center; font-size:11px; }
+    @media (max-width:1050px) {
+      .app { grid-template-columns:1fr; } .sidebar { display:none; }
+      .filters { grid-template-columns:1fr; }
+      .kpis { grid-template-columns:repeat(2, minmax(150px, 1fr)); }
+    }
+    @media (max-width:540px) {
+      .kpis { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-symbol" aria-hidden="true"><span class="brand-stripe one"></span><span class="brand-stripe two"></span><span class="brand-stripe three"></span></span>
+        <span>FILOSOFIA<br>DOS DADOS</span>
+      </div>
+      <nav>
+        <a class="nav-item" href="evolucao_acoes.html"><span class="nav-icon">&#8599;</span>A&ccedil;&otilde;es</a>
+        <a class="nav-item" href="painel_acoes_yield_cost.html"><span class="nav-icon">&#8644;</span>Comparar a&ccedil;&otilde;es</a>
+        <div class="nav-item">Carteira</div>
+        <a class="nav-item" href="proventos.html"><span class="nav-icon">$</span>Proventos</a>
+        <a class="nav-item" href="funil_acoes.html"><span class="nav-icon">&#9661;</span>Funil de a&ccedil;&otilde;es</a>
+        <a class="nav-item active" href="tabela_dados.html"><span class="nav-icon">&#9638;</span>Tabela de dados</a>
+        <div class="nav-section">Relat&oacute;rios</div>
+        <a class="nav-item" href="relatorio_yield_12m.html"><span class="nav-icon">&#9638;</span>Yield 12M</a>
+      </nav>
+      <div class="help">Campos vazios significam que ainda n&atilde;o havia informa&ccedil;&atilde;o oficial publicada para o per&iacute;odo consultado.</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Tabela de dados</h1>
+          <p class="subtitle">Consulte pre&ccedil;os, fundamentos CVM, proventos B3 e indicadores calculados por m&ecirc;s.</p>
+        </div>
+        <div class="stamp">Base integrada<br><strong>COTAHIST + CVM + B3</strong></div>
+      </header>
+      <section class="panel filters">
+        <label><span class="label">A&ccedil;&atilde;o</span><select id="ticker"></select></label>
+        <label><span class="label">Per&iacute;odo inicial</span><input id="inicio" type="month" value="2025-01" /></label>
+        <label><span class="label">Per&iacute;odo final</span><input id="fim" type="month" value="2026-05" /></label>
+        <div class="actions">
+          <button class="button" id="filter" type="button">Aplicar</button>
+          <button class="button secondary" id="reset" type="button">Limpar</button>
+        </div>
+        <p class="note">Nos meses sem nova publica&ccedil;&atilde;o, o fundamento exibido &eacute; o &uacute;ltimo documento CVM j&aacute; recebido at&eacute; a data de fechamento. N&atilde;o h&aacute; preenchimento antes do primeiro documento oficial.</p>
+      </section>
+      <section class="kpis">
+        <article class="panel kpi"><p class="kpi-label">Registros exibidos</p><div class="kpi-value" id="total">-</div><div class="kpi-detail" id="range"></div></article>
+        <article class="panel kpi"><p class="kpi-label">Documento CVM</p><div class="kpi-value white" id="documentType">-</div><div class="kpi-detail" id="document"></div></article>
+        <article class="panel kpi"><p class="kpi-label">Pre&ccedil;o de fechamento</p><div class="kpi-value" id="price">-</div><div class="kpi-detail" id="priceDate"></div></article>
+        <article class="panel kpi"><p class="kpi-label">Lucro l&iacute;quido</p><div class="kpi-value compact" id="netIncome">-</div><div class="kpi-detail">CVM DFP/ITR</div></article>
+        <article class="panel kpi"><p class="kpi-label">Patrim&ocirc;nio l&iacute;quido</p><div class="kpi-value compact" id="equity">-</div><div class="kpi-detail">CVM DFP/ITR</div></article>
+        <article class="panel kpi"><p class="kpi-label">Receita</p><div class="kpi-value compact" id="revenue">-</div><div class="kpi-detail">CVM DFP/ITR</div></article>
+        <article class="panel kpi"><p class="kpi-label">Fluxo de caixa</p><div class="kpi-value compact" id="cashFlow">-</div><div class="kpi-detail">Varia&ccedil;&atilde;o l&iacute;quida CVM</div></article>
+        <article class="panel kpi"><p class="kpi-label">Dividendos/A&ccedil;&atilde;o 12m</p><div class="kpi-value orange" id="dividends">-</div><div class="kpi-detail">Eventos em dinheiro B3</div></article>
+        <article class="panel kpi"><p class="kpi-label">Distribui&ccedil;&atilde;o total</p><div class="kpi-value compact orange" id="distribution">-</div><div class="kpi-detail">Dividendos + JCP reportados</div></article>
+        <article class="panel kpi"><p class="kpi-label">LPA reportado</p><div class="kpi-value" id="eps">-</div><div class="kpi-detail">Classe do papel</div></article>
+        <article class="panel kpi"><p class="kpi-label">ROE do per&iacute;odo</p><div class="kpi-value" id="roe">-</div><div class="kpi-detail">Lucro / patrim&ocirc;nio</div></article>
+        <article class="panel kpi"><p class="kpi-label">Payout do per&iacute;odo</p><div class="kpi-value" id="payout">-</div><div class="kpi-detail">Distribui&ccedil;&atilde;o / lucro</div></article>
+        <article class="panel kpi"><p class="kpi-label">P/L</p><div class="kpi-value" id="pe">-</div><div class="kpi-detail">Pre&ccedil;o / LPA reportado</div></article>
+        <article class="panel kpi"><p class="kpi-label">Crescimento do LPA</p><div class="kpi-value" id="epsGrowth">-</div><div class="kpi-detail">Mesmo per&iacute;odo do ano anterior</div></article>
+        <article class="panel kpi"><p class="kpi-label">PEG</p><div class="kpi-value" id="peg">-</div><div class="kpi-detail">P/L / crescimento positivo</div></article>
+      </section>
+      <section class="panel table-panel">
+        <div class="table-head"><h2 class="table-title">S&eacute;rie mensal</h2><span class="status" id="status">Carregando banco...</span></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>Per&iacute;odo</th><th>A&ccedil;&atilde;o</th><th>Documento CVM</th><th>Fechamento</th>
+              <th>Lucro l&iacute;quido</th><th>Patrim&ocirc;nio l&iacute;quido</th><th>Receita</th><th>Fluxo de caixa</th>
+              <th>Dividendos/A&ccedil;&atilde;o 12m</th><th>ROE</th><th>Payout</th><th>P/L</th><th>Cresc. LPA</th><th>PEG</th>
+            </tr></thead>
+            <tbody id="body"></tbody>
+          </table>
+        </div>
+      </section>
+      <footer>Fontes: B3 COTAHIST, B3 Empresas Listadas e CVM DFP/ITR. Metodologia documentada no banco do projeto.</footer>
+    </main>
+  </div>
+  <script src="static/api-client.js"></script>
+  <script>
+    const ticker = document.getElementById("ticker");
+    const inicio = document.getElementById("inicio");
+    const fim = document.getElementById("fim");
+    const dash = '<span class="null">-</span>';
+    const money = value => value == null ? dash : value.toLocaleString("pt-BR", {style:"currency", currency:"BRL", maximumFractionDigits:2});
+    const amount = value => value == null ? dash : value.toLocaleString("pt-BR", {style:"currency", currency:"BRL", notation:"compact", compactDisplay:"short", maximumFractionDigits:2});
+    const amountTable = value => value == null ? dash : value.toLocaleString("pt-BR", {style:"currency", currency:"BRL", maximumFractionDigits:0});
+    const pct = value => value == null ? dash : value.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2}) + "%";
+    const ratio = value => value == null ? dash : value.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+    const month = row => String(row.mes).padStart(2, "0") + "/" + row.ano;
+    let tickersLoaded = false;
+
+    async function loadTickers() {
+      const response = await fetch("/api/cotahist?ano_inicio=2026&ano_fim=2026", {cache:"no-store"});
+      const payload = await response.json();
+      const found = [...new Map(payload.dados.map(row => [row.ticker, row.nome])).entries()].sort();
+      ticker.innerHTML = found.map(([code, name]) => `<option value="${code}">${code} - ${name}</option>`).join("");
+      ticker.value = found.some(([code]) => code === "PETR4") ? "PETR4" : found[0][0];
+      tickersLoaded = true;
+    }
+
+    function updateKpis(rows) {
+      const latest = rows[rows.length - 1];
+      document.getElementById("total").textContent = rows.length;
+      document.getElementById("range").textContent = rows.length ? `${month(rows[0])} a ${month(latest)}` : "Sem resultados";
+      document.getElementById("documentType").textContent = latest && latest.documento_cvm ? latest.documento_cvm : "-";
+      document.getElementById("document").textContent = latest && latest.documento_cvm ? `Recebido em ${latest.data_recebimento_cvm.split("-").reverse().join("/")}` : "Sem documento CVM";
+      document.getElementById("price").innerHTML = latest ? money(latest.preco_fechamento) : dash;
+      document.getElementById("priceDate").textContent = latest ? `Fechamento em ${latest.data_fechamento.split("-").reverse().join("/")}` : "";
+      document.getElementById("netIncome").innerHTML = latest ? amount(latest.lucro_liquido_reais) : dash;
+      document.getElementById("equity").innerHTML = latest ? amount(latest.patrimonio_liquido_reais) : dash;
+      document.getElementById("revenue").innerHTML = latest ? amount(latest.receita_reais) : dash;
+      document.getElementById("cashFlow").innerHTML = latest ? amount(latest.fluxo_caixa_reais) : dash;
+      document.getElementById("dividends").innerHTML = latest ? money(latest.dividendos_por_acao_12m_reais) : dash;
+      document.getElementById("distribution").innerHTML = latest ? amount(latest.distribuicao_total_reais) : dash;
+      document.getElementById("eps").innerHTML = latest ? money(latest.lpa_reais) : dash;
+      document.getElementById("roe").innerHTML = latest ? pct(latest.roe_periodo_pct) : dash;
+      document.getElementById("payout").innerHTML = latest ? pct(latest.payout_periodo_pct) : dash;
+      document.getElementById("pe").innerHTML = latest ? ratio(latest.pl_ratio) : dash;
+      document.getElementById("epsGrowth").innerHTML = latest ? pct(latest.crescimento_lpa_pct) : dash;
+      document.getElementById("peg").innerHTML = latest ? ratio(latest.peg_ratio) : dash;
+    }
+
+    async function render() {
+      if (!tickersLoaded) await loadTickers();
+      if (inicio.value && fim.value && inicio.value > fim.value) {
+        document.getElementById("status").textContent = "Período inicial precisa ser anterior ao final.";
+        return;
+      }
+      const params = new URLSearchParams({ticker: ticker.value});
+      if (inicio.value) params.set("inicio", inicio.value);
+      if (fim.value) params.set("fim", fim.value);
+      document.getElementById("status").textContent = "Consultando banco...";
+      const response = await fetch(`/api/indicadores?${params.toString()}`, {cache:"no-store"});
+      const payload = await response.json();
+      const rows = payload.dados || [];
+      document.getElementById("status").textContent = `${rows.length} registros encontrados`;
+      updateKpis(rows);
+      document.getElementById("body").innerHTML = rows.length ? rows.map(row => `<tr>
+        <td>${month(row)}</td><td class="ticker">${row.ticker}</td><td class="source">${row.documento_cvm || "-"}</td>
+        <td>${money(row.preco_fechamento)}</td><td>${amountTable(row.lucro_liquido_reais)}</td>
+        <td>${amountTable(row.patrimonio_liquido_reais)}</td><td>${amountTable(row.receita_reais)}</td>
+        <td>${amountTable(row.fluxo_caixa_reais)}</td><td>${money(row.dividendos_por_acao_12m_reais)}</td>
+        <td>${pct(row.roe_periodo_pct)}</td><td>${pct(row.payout_periodo_pct)}</td>
+        <td>${ratio(row.pl_ratio)}</td><td class="${row.crescimento_lpa_pct >= 0 ? 'positive' : 'negative'}">${pct(row.crescimento_lpa_pct)}</td>
+        <td>${ratio(row.peg_ratio)}</td>
+      </tr>`).join("") : '<tr><td colspan="14" class="empty">Nenhum dado encontrado para os filtros informados.</td></tr>';
+    }
+    document.getElementById("filter").addEventListener("click", render);
+    document.getElementById("reset").addEventListener("click", () => { inicio.value = ""; fim.value = ""; render(); });
+    ticker.addEventListener("change", render);
+    render().catch(() => { document.getElementById("status").textContent = "API do banco indisponível."; });
+  </script>
+</body>
+</html>
